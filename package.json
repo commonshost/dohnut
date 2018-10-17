@@ -10,7 +10,10 @@
     "type": "git",
     "url": "git+https://github.com/commonshost/dohnut.git"
   },
-  "author": "",
+  "author": "Kenny Shen <kenny@machinesung.com>",
+  "contributors": [
+    "Sebastiaan Deckers <sebdeckers83@gmail.com>"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/commonshost/dohnut/issues"

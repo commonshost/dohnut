@@ -43,3 +43,7 @@ Options:
   -v, --verbose      Verbose
   -h, --help         output usage information
 ```
+
+## Credits
+
+Made by [Kenny Shen](https://www.machinesung.com) and [Sebastiaan Deckers](https://twitter.com/sebdeckers) for 🐑 [Commons Host](https://commons.host).
