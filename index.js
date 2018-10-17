@@ -35,8 +35,8 @@ client.on('error', (err) => {
 })
 
 socket.on('listening', () => {
-  const address = socket.address()
-  logger.info(`dohnut listening on ${address.address}:${address.port}`)
+  const { address, port } = socket.address()
+  logger.info(`dohnut listening on ${address}:${port}`)
 })
 
 socket.on('message', async (message, rinfo) => {
