@@ -1,0 +1,32 @@
+{
+  "name": "dohnut",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/commonshost/dohnut.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/commonshost/dohnut/issues"
+  },
+  "keywords": [
+    "doh",
+    "dns"
+  ],
+  "homepage": "https://github.com/commonshost/dohnut#readme",
+  "devDependencies": {
+    "standard": "^12.0.1",
+    "tape": "^4.9.1"
+  },
+  "dependencies": {
+    "base64url": "^3.0.0",
+    "dns-packet": "^5.0.4",
+    "pino": "^5.8.0"
+  }
+}
