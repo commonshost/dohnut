@@ -1,6 +1,8 @@
-# dohnut
+# dohnut 🍩
 
-## Run
+A simple DNS proxy to send relay your queries to a DNS over HTTPS (DoH) server.
+
+## Usage
 
 Use Commons as the default DOH server
 
