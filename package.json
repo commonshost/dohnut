@@ -1,6 +1,6 @@
 {
   "name": "dohnut",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "dohnut.js",
   "bin": "dohnut.js",
