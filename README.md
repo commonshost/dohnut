@@ -33,6 +33,32 @@ By default, queries are relayed to Commons' DOH server. You can specify your own
 $ npx dohnut --verbose --port 5300 --doh https://cloudflare-dns.com/dns-query | npx pino-colada
 ```
 
+You can specify a blocklist with `-s /path/to/blocklist`. For instance,
+
+```shell
+
+$ cat /tmp/foo
+yola.com
+
+$ npx dohnut -p 5300 -s /tmp/foo
+
+$ dig @localhost -p 5300 yola.com
+;; ->>HEADER<<- opcode: QUERY, rcode: NXDOMAIN, id: 17315
+;; flags: qr ; QUERY: 0, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+;; QUESTION SECTION:
+;;
+;; ANSWER SECTION:
+
+;; AUTHORITY SECTION:
+
+;; ADDITIONAL SECTION:
+
+;; Query time: 0 msec
+;; SERVER: 0.0.0.0
+;; WHEN: Sun Nov  4 02:35:33 2018
+;; MSG SIZE  rcvd: 12
+```
+
 Availabe options for `dohnut` can be shown via `-h`:
 
 ```shell

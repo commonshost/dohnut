@@ -30,6 +30,7 @@
   "dependencies": {
     "base64url": "^3.0.0",
     "commander": "^2.19.0",
+    "dns-packet": "^5.0.4",
     "pino": "^5.8.0"
   }
 }
