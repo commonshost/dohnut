@@ -73,6 +73,17 @@ Options:
   -h, --help         output usage information
 ```
 
+## Deploying on a Raspberry Pi
+
+```
+sudo apt-get install git
+sudo setcap cap_net_bind_service=+ep `readlink -f \`which node\``
+curl -L https://git.io/n-install | bash
+n latest
+n prune
+npx dohnut --verbose --port 53 | npx pino-colada
+```
+
 ## Credits
 
 Made by [Kenny Shen](https://www.machinesung.com) and [Sebastiaan Deckers](https://twitter.com/sebdeckers) for 🐑 [Commons Host](https://commons.host).
