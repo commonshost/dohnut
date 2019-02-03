@@ -45,6 +45,8 @@ iana.org.		3591	IN	A	192.0.43.8
 
 Array of URLs or shortnames of upstream DNS over HTTPS resolvers.
 
+Queries are distributed randomly over all resolvers.
+
 Default: `[ "https://commons.host" ]`
 
 ### `--listen`, `--local`, `-l`
