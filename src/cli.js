@@ -17,11 +17,11 @@ function parseOptions ({ doh = [], listen = [] }) {
       const upstream = hasScheme.test(service) ? service : `https://${service}`
       url = new URL(upstream).toString()
     }
-    configuration.doh.push({ doh: url })
+    configuration.doh.push({ uri: url })
   }
 
   for (const listener of listen) {
-    const matchPort = /^(\d{1,5})$/
+    const matchPort = /^:?(\d{1,5})$/
     const matchIpv4 = /^([\d.]{1,15})(?::(\d{1,5}))?$/
     const matchIpv6 = /^\[?([a-fA-F\d:]{2,40})\]?(?::(\d{1,5}))?$/
     let type, address, port
