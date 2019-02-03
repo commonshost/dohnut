@@ -1,36 +1,47 @@
 {
   "name": "dohnut",
   "version": "1.1.0",
-  "description": "",
-  "main": "dohnut.js",
-  "bin": "dohnut.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/commonshost/dohnut.git"
-  },
+  "description": "DNS to DNS-over-HTTPS (DoH) proxy server",
+  "license": "ISC",
+  "repository": "github:commonshost/dohnut",
   "author": "Kenny Shen <kenny@machinesung.com>",
   "contributors": [
     "Sebastiaan Deckers <sebdeckers83@gmail.com>"
   ],
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/commonshost/dohnut/issues"
+  "main": "src/master.js",
+  "bin": {
+    "dohnut": "src/bin.js"
+  },
+  "scripts": {
+    "test": "npm run lint && npm run proof",
+    "lint": "standard --verbose | snazzy",
+    "proof": "tape 'test/*.js'"
   },
   "keywords": [
     "doh",
-    "dns"
+    "dns",
+    "proxy"
   ],
-  "homepage": "https://github.com/commonshost/dohnut#readme",
   "devDependencies": {
-    "standard": "^12.0.1"
+    "blue-tape": "^1.0.0",
+    "snazzy": "^8.0.0",
+    "standard": "^12.0.1",
+    "tape": "^4.9.2"
   },
   "dependencies": {
-    "base64url": "^3.0.0",
-    "commander": "^2.19.0",
-    "dns-packet": "^5.0.4",
-    "pino": "^5.8.0"
+    "@commonshost/resolvers": "^1.2.0",
+    "base64url": "^3.0.1",
+    "chalk": "^2.4.2",
+    "dns-packet": "^5.1.2",
+    "pino": "^5.10.10",
+    "please-upgrade-node": "^3.1.1",
+    "uri-templates": "^0.2.0",
+    "yargs": "^12.0.5"
+  },
+  "optionalDependencies": {
+    "sd-notify": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=11.7.0"
   }
 }

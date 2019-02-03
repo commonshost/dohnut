@@ -1,0 +1,34 @@
+{
+  "dns": [
+    {
+      "type": "udp4",
+      "address": "0.0.0.0",
+      "port": 5553
+    },
+    {
+      "type": "udp6",
+      "address": "::",
+      "port": 5553
+    }
+  ],
+  "doh": [
+    {
+      "uri": "https://commons.host"
+    },
+    {
+      "uri": "https://doh.cleanbrowsing.org/doh/family-filter/"
+    },
+    {
+      "uri": "https://doh.powerdns.org"
+    },
+    {
+      "uri": "https://dns.google.com/experimental"
+    },
+    {
+      "uri": "https://cloudflare-dns.com/dns-query"
+    },
+    {
+      "uri": "https://doh.securedns.eu/dns-query{?dns}"
+    }
+  ]
+}
