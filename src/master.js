@@ -61,11 +61,8 @@ class Dohnut {
           socket
         }
         this.queries.set(query.id, query)
-        // Different strats
-        // 1. Random server
-        // 2. All servers: Race to get the fastest answer
-        // 3. Multiple servers: Verify matching, truth concensus
-        this.doh[0].send(query) // TODO: this is dumb
+        const randomConnection = Math.floor(Math.random() * this.doh.length)
+        this.doh[randomConnection].send(query)
       })
       this.dns.add(socket)
     }
