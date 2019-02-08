@@ -93,6 +93,8 @@ async function main () {
   const configuration = parseOptions(argv)
 
   if (argv.test) {
+    console.log('Configuration is valid')
+    console.log(configuration)
     process.exit(0)
   }
 
