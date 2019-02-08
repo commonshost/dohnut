@@ -44,7 +44,9 @@ class Dohnut {
     this.dns = new Set()
     this.doh = []
     this.queries = new Map()
+    this.queryIds = []
     this.counter = 0
+    this.timer = null
   }
 
   async start () {
@@ -61,6 +63,7 @@ class Dohnut {
           socket
         }
         this.queries.set(query.id, query)
+        this.queryIds.push(query.id)
         const randomConnection = Math.floor(Math.random() * this.doh.length)
         this.doh[randomConnection].send(query)
       })
@@ -78,9 +81,33 @@ class Dohnut {
         }
       })
     }
+
+    this.timer = setInterval(() => {
+      const now = Date.now()
+      const ttl = 5000
+      let index = 0
+      for (const id of this.queryIds) {
+        if (this.queries.has(id)) {
+          const query = this.queries.get(id)
+          const elapsed = now - query.start
+          if (elapsed > ttl) {
+            this.queries.delete(id)
+            index++
+          } else {
+            break
+          }
+        } else {
+          index++
+        }
+      }
+      if (index > 0) {
+        this.queryIds = this.queryIds.slice(index)
+      }
+    }, 1000)
   }
 
   async stop () {
+    clearInterval(this.timer)
     for (const socket of this.dns) {
       await stopUdpSocket(socket)
       this.dns.delete(socket)
