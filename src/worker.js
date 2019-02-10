@@ -116,6 +116,8 @@ parentPort.on('message', (value) => {
       })
     })
   } else if ('exit' in value) {
-    process.exit()
+    session.close(() => {
+      process.exit()
+    })
   }
 })

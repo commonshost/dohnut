@@ -4,7 +4,7 @@ const { join } = require('path')
 const EventEmitter = require('events')
 const { Worker } = require('worker_threads')
 
-function startUdpSocket (type, address, port) {
+function startUdpSocket (type, address, port, fd) {
   return new Promise((resolve, reject) => {
     const socket = createSocket(type)
     function onSuccess () {
@@ -17,7 +17,7 @@ function startUdpSocket (type, address, port) {
     }
     socket.once('listening', onSuccess)
     socket.once('error', onFailure)
-    socket.bind({ address, port })
+    socket.bind({ address, port, fd })
   })
 }
 
@@ -50,8 +50,10 @@ class Dohnut {
   }
 
   async start () {
-    for (const { type, address, port } of this.configuration.dns) {
-      const socket = await startUdpSocket(type, address, port)
+    for (const { type, address, port, fd } of this.configuration.dns) {
+      const socket = await startUdpSocket(type, address, port, fd)
+      const location = fd === undefined ? `[${address}]:${port}` : `unix:${fd}`
+      console.log(`Listening on ${location} (${type})`)
       socket.on('message', (message, remote) => {
         const query = {
           id: ++this.counter,
@@ -66,6 +68,9 @@ class Dohnut {
         this.queryIds.push(query.id)
         const randomConnection = Math.floor(Math.random() * this.doh.length)
         this.doh[randomConnection].send(query)
+      })
+      socket.on('close', async () => {
+        console.log(`Closed ${location}`)
       })
       this.dns.add(socket)
     }

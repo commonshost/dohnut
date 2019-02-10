@@ -4,6 +4,7 @@ const { Dohnut } = require('./master')
 const { aliased } = require('@commonshost/resolvers')
 const yargs = require('yargs')
 const chalk = require('chalk')
+const { platform } = require('os')
 
 function parseOptions ({ doh = [], listen = [] }) {
   const configuration = { dns: [], doh: [] }
@@ -41,6 +42,28 @@ function parseOptions ({ doh = [], listen = [] }) {
     configuration.dns.push({ address, type, port: Number(port) || 53 })
   }
 
+  switch (platform()) {
+    case 'darwin':
+    case 'linux':
+      const socketActivation = require('socket-activation')
+      try {
+        for (const fd of socketActivation.collect('dohnut')) {
+          configuration.dns.push({ fd, type: 'udp4' })
+        }
+      } catch (error) {
+        switch (error.code) {
+          case 'ESRCH':
+            break
+          case 'ENOENT':
+            console.warn(error.message)
+            break
+          default:
+            throw error
+        }
+      }
+      break
+  }
+
   if (configuration.doh.length === 0) {
     throw new Error('No upstream DoH services specified.')
   }
@@ -58,13 +81,13 @@ async function main () {
       type: 'array',
       alias: ['upstream', 'proxy'],
       describe: 'URLs or shortnames of upstream DNS over HTTPS resolvers',
-      default: ['https://commons.host']
+      default: []
     })
     .option('listen', {
       type: 'array',
       alias: ['local', 'l'],
       describe: 'IPs and ports for the local DNS server',
-      default: ['127.0.0.1:53', '[::1]:53']
+      default: []
     })
     .option('test', {
       type: 'boolean',
@@ -72,6 +95,9 @@ async function main () {
       describe: 'Validate the arguments without starting the server',
       default: false
     })
+    .example('')
+    .example('--listen 127.0.0.1 ::1 --doh commonshost')
+    .example('Only allow localhost connections. Proxy to the Commons Host DoH service.')
     .example('')
     .example('--doh https://localhost/my-own-resolver')
     .example('Use a custom resolver.')
@@ -84,6 +110,9 @@ async function main () {
     .example('')
     .example('--listen 8053')
     .example('Listen on a non-privileged port (>=1024).')
+    .example('')
+    .example('--test --doh https://example.com --listen 192.168.12.34')
+    .example('Check the syntax of the URL and IP address arguments. No connections are attempted.')
     .example('')
     .example('Shortnames mapped to a DoH URL:')
     .example(Array.from(aliased.doh.keys()).sort().join(', '))
@@ -100,7 +129,13 @@ async function main () {
 
   const dohnut = new Dohnut(configuration)
   await dohnut.start()
-  console.log('Dohnut started')
+
+  for (const signal of ['SIGINT', 'SIGTERM']) {
+    process.on(signal, async () => {
+      console.log(`${signal} received`)
+      await dohnut.stop()
+    })
+  }
 
   let notify
   try {
