@@ -4,6 +4,8 @@ const { join } = require('path')
 const EventEmitter = require('events')
 const { Worker } = require('worker_threads')
 
+const PING_MIN_INTERVAL = 10000
+
 function startUdpSocket (type, address, port, fd) {
   return new Promise((resolve, reject) => {
     const socket = createSocket(type)
@@ -37,6 +39,27 @@ function stopUdpSocket (socket) {
   })
 }
 
+function sum (numbers) {
+  let count = 0
+  for (const number of numbers) {
+    count += number
+  }
+  return count
+}
+
+function randomWeighted (weights, total) {
+  const random = Math.random() * total
+  let step = total
+  let index = weights.length
+  for (const weight of weights) {
+    step -= weight
+    if (random >= step) {
+      return weights.length - index
+    }
+    index--
+  }
+}
+
 class Dohnut {
   constructor (configuration) {
     this.configuration = configuration
@@ -47,30 +70,73 @@ class Dohnut {
     this.queryIds = []
     this.counter = 0
     this.timer = null
+    this.lastPingTime = 0
+    this.fastestConnection = undefined
+    this.getConnection = this.configuration.loadBalance === 'random'
+      ? this.getRandomConnection : this.getFastestConnection
+  }
+
+  getRandomConnection () {
+    const index = Math.floor(Math.random() * this.doh.length)
+    const connection = this.doh[index]
+    console.log('Selected', connection.uri)
+    return connection
+  }
+
+  getFastestConnection () {
+    return this.fastestConnection || this.getRandomConnection()
+  }
+
+  refreshPing () {
+    const pinged = []
+    for (const connection of this.doh) {
+      if (connection.pinged === false) {
+        connection.ping()
+      } else if (connection.rtt !== undefined) {
+        pinged.push(connection)
+      }
+    }
+
+    if (pinged.length > 0) {
+      const rtts = pinged.map(({ rtt }) => rtt)
+      const slowest = Math.max(...rtts)
+      const weights = rtts.map((rtt) => 1 / (rtt / slowest))
+      const total = sum(weights)
+      const index = randomWeighted(weights, total)
+      const target = pinged[index]
+      target.ping()
+    }
   }
 
   async start () {
     for (const { type, address, port, fd } of this.configuration.dns) {
       const socket = await startUdpSocket(type, address, port, fd)
-      const location = fd === undefined ? `[${address}]:${port}` : `unix:${fd}`
-      console.log(`Listening on ${location} (${type})`)
+      const location = fd !== undefined ? `unix:${fd}`
+        : type === 'udp4' ? `${address}:${port}`
+          : `[${address}]:${port}`
+      console.log(`Started listening on ${location} (${type})`)
       socket.on('message', (message, remote) => {
+        const now = Date.now()
         const query = {
           id: ++this.counter,
           family: remote.family,
           address: remote.address,
           port: remote.port,
           message: message.buffer,
-          start: Date.now(),
+          begin: now,
           socket
         }
         this.queries.set(query.id, query)
         this.queryIds.push(query.id)
-        const randomConnection = Math.floor(Math.random() * this.doh.length)
-        this.doh[randomConnection].send(query)
+        const connection = this.getConnection()
+        connection.send({ query: { id: query.id, message: query.message } })
+        if (now > this.lastPingTime + PING_MIN_INTERVAL) {
+          this.lastPingTime = now
+          this.refreshPing()
+        }
       })
       socket.on('close', async () => {
-        console.log(`Closed ${location}`)
+        console.log(`Stopped listening on ${location} (${type})`)
       })
       this.dns.add(socket)
     }
@@ -85,6 +151,24 @@ class Dohnut {
           query.socket.send(message, query.port, query.address)
         }
       })
+      connection.on('ping', () => {
+        console.log(`Ping RTT: ${connection.rtt} ms @ ${connection.uri}`)
+        let fastest = this.fastestConnection
+        for (const connection of this.doh) {
+          if (connection.rtt !== undefined) {
+            if (fastest === undefined || connection.rtt < fastest.rtt) {
+              fastest = connection
+            }
+          }
+        }
+        if (this.fastestConnection !== fastest) {
+          this.fastestConnection = fastest
+          if (fastest) {
+            const { uri, rtt } = fastest
+            console.log(`Fastest connection: ${uri} (RTT: ${rtt} ms)`)
+          }
+        }
+      })
     }
 
     this.timer = setInterval(() => {
@@ -94,7 +178,7 @@ class Dohnut {
       for (const id of this.queryIds) {
         if (this.queries.has(id)) {
           const query = this.queries.get(id)
-          const elapsed = now - query.start
+          const elapsed = now - query.begin
           if (elapsed > ttl) {
             this.queries.delete(id)
             index++
@@ -131,45 +215,68 @@ class Connection extends EventEmitter {
     this.worker = undefined
     this.pending = []
     this.state = 'disconnected' // connecting, connected
+    this.pinged = false
+    this.rtt = undefined
   }
 
-  send (query) {
+  send (message) {
     switch (this.state) {
       case 'connected':
-        const { id, message } = query
-        this.worker.postMessage({ query: { id, message } })
+        this.worker.postMessage(message)
         break
       case 'connecting':
-        this.pending.push(query)
+        this.pending.push(message)
         break
       case 'disconnected':
-        this.pending.push(query)
+        this.pending.push(message)
         this.state = 'connecting'
         if (this.worker === undefined) {
           this.worker = new Worker(join(__dirname, 'worker.js'))
-          this.worker.on('message', (value) => {
-            if ('state' in value) {
-              console.log(`Worker ${this.worker.threadId}:`, value.state)
-              this.state = value.state
-              switch (this.state) {
-                case 'connected':
-                  while (this.pending.length > 0) {
-                    const { id, message } = this.pending.shift()
-                    this.worker.postMessage({ query: { id, message } })
-                  }
-                  break
-              }
-            } else if ('response' in value) {
-              this.emit('response', value.response)
-            } else if ('busy' in value) {
-              const { query } = value.busy
-              this.send(query)
-            }
-          })
+          this.worker.on('message', this.receive.bind(this))
+          this.worker.once('exit', () => { this.worker = undefined })
         }
         this.worker.postMessage({ uri: this.uri })
         break
     }
+  }
+
+  receive (value) {
+    if ('state' in value) {
+      const { state } = value
+      console.log(`Worker ${this.worker.threadId}:`, value.state)
+      this.state = state
+      switch (state) {
+        case 'connected':
+          const { pending } = this
+          while (pending.length > 0) {
+            const message = pending.shift()
+            this.send(message)
+          }
+          break
+        case 'disconnected':
+          if (this.pinged === true && this.rtt === undefined) {
+            this.pinged = false
+          }
+          break
+      }
+    } else if ('response' in value) {
+      this.emit('response', value.response)
+      if (value.response.error === 'http') {
+        this.rtt = undefined
+        this.emit('ping')
+      }
+    } else if ('ping' in value) {
+      this.rtt = value.ping.duration
+      this.emit('ping')
+    } else if ('busy' in value) {
+      this.send(value.busy.message)
+    }
+  }
+
+  ping () {
+    this.pinged = true
+    this.rtt = undefined
+    this.send({ ping: {} })
   }
 
   stop () {

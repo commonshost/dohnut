@@ -6,8 +6,8 @@ const yargs = require('yargs')
 const chalk = require('chalk')
 const { platform } = require('os')
 
-function parseOptions ({ doh = [], listen = [] }) {
-  const configuration = { dns: [], doh: [] }
+function parseOptions ({ doh = [], listen = [], loadBalance }) {
+  const configuration = { dns: [], doh: [], loadBalance }
 
   for (const service of doh) {
     let url
@@ -95,6 +95,12 @@ async function main () {
       describe: 'Validate the arguments without starting the server',
       default: false
     })
+    .option('load-balance', {
+      alias: ['lb'],
+      type: 'string',
+      choices: ['fastest-http-ping', 'random'],
+      default: 'fastest-http-ping'
+    })
     .example('')
     .example('--listen 127.0.0.1 ::1 --doh commonshost')
     .example('Only allow localhost connections. Proxy to the Commons Host DoH service.')
@@ -103,7 +109,7 @@ async function main () {
     .example('Use a custom resolver.')
     .example('')
     .example('--doh commonshost cloudflare quad9 cleanbrowsing')
-    .example('Multiple DoH resolvers can be used. Shortnames for popular services are supported.')
+    .example('Multiple DoH service can be used. Shortnames for popular services are supported.')
     .example('')
     .example('--listen :: 0.0.0.0')
     .example('Listen on all network interfaces using both IPv6 and IPv4.')
@@ -113,6 +119,12 @@ async function main () {
     .example('')
     .example('--test --doh https://example.com --listen 192.168.12.34')
     .example('Check the syntax of the URL and IP address arguments. No connections are attempted.')
+    .example('')
+    .example('--load-balance random --doh quad9 cloudflare commonshost')
+    .example('Send queries to one of multiple DoH services at random for increased privacy.')
+    .example('')
+    .example('--load-balance fastest-http-ping --doh quad9 cloudflare commonshost')
+    .example('Send queries to the fastest DoH service by measuring ping round-trip-times.')
     .example('')
     .example('Shortnames mapped to a DoH URL:')
     .example(Array.from(aliased.doh.keys()).sort().join(', '))

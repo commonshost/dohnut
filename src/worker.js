@@ -16,6 +16,8 @@ const UriTemplate = require('uri-templates')
 const { encode } = require('base64url')
 const dnsPacket = require('dns-packet')
 
+const DNS_MESSAGE = 'application/dns-message'
+
 let session
 let uri
 let path
@@ -64,16 +66,15 @@ parentPort.on('message', (value) => {
       console.error(`Worker ${threadId}: session error ${error.message}`)
     })
   } else if ('query' in value) {
-    // console.log(`Worker ${threadId}: query ${value.query.id}`)
     if (session.destroyed) {
-      parentPort.postMessage({ busy: { query: value.query } })
+      parentPort.postMessage({ busy: { message: value } })
       return
     }
     const query = Buffer.from(value.query.message)
     const dnsId = query.readUInt16BE(0)
     query.writeUInt16BE(0, 0)
     const headers = {}
-    headers[HTTP2_HEADER_ACCEPT] = 'application/dns-message'
+    headers[HTTP2_HEADER_ACCEPT] = DNS_MESSAGE
     let stream
     if (uri.varNames.includes('dns')) {
       headers[HTTP2_HEADER_METHOD] = HTTP2_METHOD_GET
@@ -82,7 +83,7 @@ parentPort.on('message', (value) => {
       stream = session.request(headers, { endStream: true })
     } else {
       headers[HTTP2_HEADER_METHOD] = HTTP2_METHOD_POST
-      headers[HTTP2_HEADER_CONTENT_TYPE] = 'application/dns-message'
+      headers[HTTP2_HEADER_CONTENT_TYPE] = DNS_MESSAGE
       headers[HTTP2_HEADER_CONTENT_LENGTH] = value.query.message.byteLength
       headers[HTTP2_HEADER_PATH] = path
       stream = session.request(headers)
@@ -91,17 +92,17 @@ parentPort.on('message', (value) => {
     stream.on('error', (error) => {
       console.error(`Worker ${threadId}: stream error - ${error.message}`)
       const message = dnsErrorServFail(dnsId, query)
-      const response = { id: value.query.id, message }
+      const response = { id: value.query.id, message, error: 'http' }
       parentPort.postMessage({ response })
       stream.close()
     })
     stream.on('response', (headers) => {
       const status = headers[HTTP2_HEADER_STATUS]
-      if (status !== 200) {
-        // TODO follow 3xx redirect?
-        console.error(`Worker ${threadId}: HTTP response status code ${status}`)
+      const contentType = headers[HTTP2_HEADER_CONTENT_TYPE]
+      if (status !== 200 || contentType !== DNS_MESSAGE) {
+        console.error(`Worker ${threadId}: HTTP ${status} (${contentType})`)
         const message = dnsErrorServFail(dnsId, query)
-        const response = { id: value.query.id, message }
+        const response = { id: value.query.id, message, error: 'http' }
         parentPort.postMessage({ response })
         stream.close()
         return
@@ -115,9 +116,25 @@ parentPort.on('message', (value) => {
         parentPort.postMessage({ response })
       })
     })
-  } else if ('exit' in value) {
-    session.close(() => {
-      process.exit()
+  } else if ('ping' in value) {
+    if (session.destroyed) {
+      parentPort.postMessage({ busy: { message: value } })
+      return
+    }
+    session.ping((error, duration, payload) => {
+      if (error) {
+        console.error(`Worker ${threadId}: ping failed - ${error.message}`)
+      } else {
+        parentPort.postMessage({ ping: { duration } })
+      }
     })
+  } else if ('exit' in value) {
+    if (session && !session.destroyed) {
+      session.close(() => {
+        process.exit()
+      })
+    } else {
+      process.exit()
+    }
   }
 })
