@@ -3,6 +3,7 @@ const { createSocket } = require('dgram')
 const { join } = require('path')
 const EventEmitter = require('events')
 const { Worker } = require('worker_threads')
+const { getPopularDomains } = require('./getPopularDomains')
 
 const PING_MIN_INTERVAL = 10000
 
@@ -74,6 +75,7 @@ class Dohnut {
     this.fastestConnection = undefined
     this.getConnection = this.configuration.loadBalance === 'random'
       ? this.getRandomConnection : this.getFastestConnection
+    this.popularDomains = undefined
   }
 
   getRandomConnection () {
@@ -193,6 +195,10 @@ class Dohnut {
         this.queryIds = this.queryIds.slice(index)
       }
     }, 1000)
+
+    if (this.configuration.countermeasures.includes('spoof-queries')) {
+      this.popularDomains = await getPopularDomains()
+    }
   }
 
   async stop () {

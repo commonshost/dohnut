@@ -6,8 +6,13 @@ const yargs = require('yargs')
 const chalk = require('chalk')
 const { platform } = require('os')
 
-function parseOptions ({ doh = [], listen = [], loadBalance }) {
-  const configuration = { dns: [], doh: [], loadBalance }
+function parseOptions ({
+  doh = [],
+  listen = [],
+  loadBalance,
+  countermeasures
+}) {
+  const configuration = { dns: [], doh: [], loadBalance, countermeasures }
 
   for (const service of doh) {
     let url
@@ -101,6 +106,11 @@ async function main () {
       choices: ['fastest-http-ping', 'random'],
       default: 'fastest-http-ping'
     })
+    .option('countermeasures', {
+      type: 'array',
+      choices: ['spoof-queries'],
+      default: []
+    })
     .example('')
     .example('--listen 127.0.0.1 ::1 --doh commonshost')
     .example('Only allow localhost connections. Proxy to the Commons Host DoH service.')
@@ -125,6 +135,9 @@ async function main () {
     .example('')
     .example('--load-balance fastest-http-ping --doh quad9 cloudflare commonshost')
     .example('Send queries to the fastest DoH service by measuring ping round-trip-times.')
+    .example('')
+    .example('--countermeasures spoof-queries')
+    .example('Randomly send fake DNS queries as disinformation to deter tracking by resolvers.')
     .example('')
     .example('Shortnames mapped to a DoH URL:')
     .example(Array.from(aliased.doh.keys()).sort().join(', '))
