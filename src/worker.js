@@ -111,22 +111,7 @@ function spoofQuery (domain) {
 }
 
 parentPort.on('message', (value) => {
-  if ('uri' in value) {
-    console.log(`Worker ${threadId}: connecting to ${value.uri}`)
-    uri = new UriTemplate(value.uri)
-    spoofUseragent = value.spoofUseragent
-    path = getPath(value.uri)
-    session = connect(value.uri)
-    session.on('connect', () => {
-      parentPort.postMessage({ state: 'connected' })
-    })
-    session.on('close', () => {
-      parentPort.postMessage({ state: 'disconnected' })
-    })
-    session.on('error', (error) => {
-      console.error(`Worker ${threadId}: session error ${error.message}`)
-    })
-  } else if ('query' in value) {
+  if ('query' in value) {
     if (session.destroyed) {
       parentPort.postMessage({ busy: { message: value } })
       return
@@ -176,6 +161,21 @@ parentPort.on('message', (value) => {
       } else {
         parentPort.postMessage({ ping: { duration } })
       }
+    })
+  } else if ('uri' in value) {
+    console.log(`Worker ${threadId}: connecting to ${value.uri}`)
+    uri = new UriTemplate(value.uri)
+    spoofUseragent = value.spoofUseragent
+    path = getPath(value.uri)
+    session = connect(value.uri)
+    session.on('connect', () => {
+      parentPort.postMessage({ state: 'connected' })
+    })
+    session.on('close', () => {
+      parentPort.postMessage({ state: 'disconnected' })
+    })
+    session.on('error', (error) => {
+      console.error(`Worker ${threadId}: session error ${error.message}`)
     })
   } else if ('exit' in value) {
     if (session && !session.destroyed) {
