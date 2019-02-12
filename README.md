@@ -22,7 +22,7 @@ DNS to DNS over HTTPS (DoH) proxy server for better performance and active count
 
 ## Usage
 
-*Note: Support for running as secure services under systemd (Linux) and launchd (Mac OS) is coming soon. It technically already works but needs more documentation. Guides on integrating with Pi-hole coming soon. Also expect an easy to use desktop app.*
+*Note: Support for running as services under systemd (Linux) and launchd (Mac OS) is coming soon. It technically already works but needs more testing & documentation. Guides on integrating with Pi-hole are coming soon. An easy to use desktop app is also planned.*
 
 Launch Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service.
 
@@ -53,7 +53,7 @@ $ dig @localhost iana.org
 iana.org.		3591	IN	A	192.0.43.8
 
 ;; Query time: 4 msec
-;; SERVER: 127.0.0.1#8053(127.0.0.1)
+;; SERVER: 127.0.0.1#53(127.0.0.1)
 ;; MSG SIZE  rcvd: 53
 ```
 
