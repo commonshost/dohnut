@@ -117,21 +117,26 @@ class Dohnut {
         : type === 'udp4' ? `${address}:${port}`
           : `[${address}]:${port}`
       console.log(`Started listening on ${location} (${type})`)
-      socket.on('message', (message, remote) => {
+      socket.on('message', ({ buffer }, remote) => {
         const now = Date.now()
         const query = {
           id: ++this.counter,
           family: remote.family,
           address: remote.address,
           port: remote.port,
-          message: message.buffer,
+          message: buffer,
           begin: now,
           socket
         }
         this.queries.set(query.id, query)
         this.queryIds.push(query.id)
         const connection = this.getConnection()
-        connection.send({ query: { id: query.id, message: query.message } })
+        const message = { query: { id: query.id, message: query.message } }
+        if (this.popularDomains !== undefined) {
+          const index = Math.floor(Math.random() * this.popularDomains.length)
+          message.query.spoofDomain = this.popularDomains[index]
+        }
+        connection.send(message)
         if (now > this.lastPingTime + PING_MIN_INTERVAL) {
           this.lastPingTime = now
           this.refreshPing()
@@ -198,6 +203,8 @@ class Dohnut {
 
     if (this.configuration.countermeasures.includes('spoof-queries')) {
       this.popularDomains = await getPopularDomains()
+      const count = this.popularDomains.length.toLocaleString()
+      console.log(`Loaded ${count} popular domains`)
     }
   }
 

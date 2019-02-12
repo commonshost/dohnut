@@ -50,6 +50,58 @@ function dnsErrorServFail (id, query) {
   })
 }
 
+function sendQuery (query) {
+  const headers = {}
+  headers[HTTP2_HEADER_ACCEPT] = DNS_MESSAGE
+  let stream
+  if (uri.varNames.includes('dns')) {
+    headers[HTTP2_HEADER_METHOD] = HTTP2_METHOD_GET
+    const dns = encode(query)
+    headers[HTTP2_HEADER_PATH] = uri.fill({ dns })
+    stream = session.request(headers, { endStream: true })
+  } else {
+    headers[HTTP2_HEADER_METHOD] = HTTP2_METHOD_POST
+    headers[HTTP2_HEADER_CONTENT_TYPE] = DNS_MESSAGE
+    headers[HTTP2_HEADER_CONTENT_LENGTH] = query.byteLength
+    headers[HTTP2_HEADER_PATH] = path
+    stream = session.request(headers)
+    stream.end(query)
+  }
+  return stream
+}
+
+function spoofQuery (domain) {
+  function spoof () {
+    const query = dnsPacket.encode({
+      type: 'query',
+      questions: [{
+        type: 'A',
+        name: domain
+      }]
+    })
+    const stream = sendQuery(query)
+    stream.on('error', (error) => {
+      console.error(`Worker ${threadId}: spoofed query failed - ${error.message}`)
+      stream.close()
+    })
+    stream.resume()
+  }
+  const random = Math.random()
+  if (random < 0.25) {
+    // Spoof before real query
+    spoof()
+  } else if (random < 0.50) {
+    // Spoof after real query
+    setImmediate(spoof)
+  } else if (random < 0.75) {
+    // Delay spoofed query up to 10s
+    const delay = Math.random() * 10000
+    setTimeout(spoof, delay)
+  } else {
+    // Do not spoof
+  }
+}
+
 parentPort.on('message', (value) => {
   if ('uri' in value) {
     console.log(`Worker ${threadId}: connecting to ${value.uri}`)
@@ -70,25 +122,13 @@ parentPort.on('message', (value) => {
       parentPort.postMessage({ busy: { message: value } })
       return
     }
+    if ('spoofDomain' in value.query) {
+      spoofQuery(value.query.spoofDomain)
+    }
     const query = Buffer.from(value.query.message)
     const dnsId = query.readUInt16BE(0)
     query.writeUInt16BE(0, 0)
-    const headers = {}
-    headers[HTTP2_HEADER_ACCEPT] = DNS_MESSAGE
-    let stream
-    if (uri.varNames.includes('dns')) {
-      headers[HTTP2_HEADER_METHOD] = HTTP2_METHOD_GET
-      const dns = encode(query)
-      headers[HTTP2_HEADER_PATH] = uri.fill({ dns })
-      stream = session.request(headers, { endStream: true })
-    } else {
-      headers[HTTP2_HEADER_METHOD] = HTTP2_METHOD_POST
-      headers[HTTP2_HEADER_CONTENT_TYPE] = DNS_MESSAGE
-      headers[HTTP2_HEADER_CONTENT_LENGTH] = value.query.message.byteLength
-      headers[HTTP2_HEADER_PATH] = path
-      stream = session.request(headers)
-      stream.end(query)
-    }
+    const stream = sendQuery(query)
     stream.on('error', (error) => {
       console.error(`Worker ${threadId}: stream error - ${error.message}`)
       const message = dnsErrorServFail(dnsId, query)
