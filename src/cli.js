@@ -103,11 +103,13 @@ async function main () {
     .option('load-balance', {
       alias: ['lb'],
       type: 'string',
+      describe: 'Strategy when using multiple DoH resolvers',
       choices: ['fastest-http-ping', 'random'],
       default: 'fastest-http-ping'
     })
     .option('countermeasures', {
       type: 'array',
+      describe: 'Special tactics to protect your privacy',
       choices: ['spoof-queries', 'spoof-useragent'],
       default: []
     })

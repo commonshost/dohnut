@@ -79,6 +79,32 @@ Validate the arguments without starting the server. Process exit code `1` indica
 
 Default: `false`
 
+### `--load-balance`, `--lb`
+
+Strategy when using multiple DoH resolvers.
+
+#### `--load-balance fastest-http-ping`
+
+Best performance. Always send DNS queries to the fastest DoH resolver. Continuously monitors the round-trip-time latency to each DoH resolver using HTTP/2 PING frames.
+
+#### `--load-balance random`
+
+Best privacy. Uniformly distributes DNS queries across all enabled DoH resolvers.
+
+### `--countermeasures`
+
+Special tactics to protect your privacy.
+
+#### `--countermeasures spoof-queries`
+
+Adds plausible deniability to any legitimate DNS query. Makes it hard for a DoH resolver to profile your DNS queries.
+
+Whenever a DNS query is proxied, a fake query is also generated. The fake query is for a domain from a public top 1 million DNS domains list, sampled by an exponential distribution. To resist detection, the fake query is sent randomly before, after, with a delay, or not at all.
+
+#### `--countermeasures spoof-useragent`
+
+Sends a fake `User-Agent` HTTP header to prevent tracking. Makes it look like every DoH request is by a different browser. Randomly samples actual user agent strings from a public data source of real-world web traffic.
+
 ### `--version`
 
 Show version number
