@@ -111,43 +111,6 @@ class Dohnut {
   }
 
   async start () {
-    for (const { type, address, port, fd } of this.configuration.dns) {
-      const socket = await startUdpSocket(type, address, port, fd)
-      const location = fd !== undefined ? `unix:${fd}`
-        : type === 'udp4' ? `${address}:${port}`
-          : `[${address}]:${port}`
-      console.log(`Started listening on ${location} (${type})`)
-      socket.on('message', ({ buffer }, remote) => {
-        const now = Date.now()
-        const query = {
-          id: ++this.counter,
-          family: remote.family,
-          address: remote.address,
-          port: remote.port,
-          message: buffer,
-          begin: now,
-          socket
-        }
-        this.queries.set(query.id, query)
-        this.queryIds.push(query.id)
-        const connection = this.getConnection()
-        const message = { query: { id: query.id, message: query.message } }
-        if (this.popularDomains !== undefined) {
-          const index = Math.floor(Math.random() * this.popularDomains.length)
-          message.query.spoofDomain = this.popularDomains[index]
-        }
-        connection.send(message)
-        if (now > this.lastPingTime + PING_MIN_INTERVAL) {
-          this.lastPingTime = now
-          this.refreshPing()
-        }
-      })
-      socket.on('close', async () => {
-        console.log(`Stopped listening on ${location} (${type})`)
-      })
-      this.dns.add(socket)
-    }
-
     for (const { uri } of this.configuration.doh) {
       const connection = new Connection(uri)
       this.doh.push(connection)
@@ -205,6 +168,43 @@ class Dohnut {
       this.popularDomains = await getPopularDomains()
       const count = this.popularDomains.length.toLocaleString()
       console.log(`Loaded ${count} popular domains`)
+    }
+
+    for (const { type, address, port, fd } of this.configuration.dns) {
+      const socket = await startUdpSocket(type, address, port, fd)
+      const location = fd !== undefined ? `unix:${fd}`
+        : type === 'udp4' ? `${address}:${port}`
+          : `[${address}]:${port}`
+      console.log(`Started listening on ${location} (${type})`)
+      socket.on('message', ({ buffer }, remote) => {
+        const now = Date.now()
+        const query = {
+          id: ++this.counter,
+          family: remote.family,
+          address: remote.address,
+          port: remote.port,
+          message: buffer,
+          begin: now,
+          socket
+        }
+        this.queries.set(query.id, query)
+        this.queryIds.push(query.id)
+        const connection = this.getConnection()
+        const message = { query: { id: query.id, message: query.message } }
+        if (this.popularDomains !== undefined) {
+          const index = Math.floor(Math.random() * this.popularDomains.length)
+          message.query.spoofDomain = this.popularDomains[index]
+        }
+        connection.send(message)
+        if (now > this.lastPingTime + PING_MIN_INTERVAL) {
+          this.lastPingTime = now
+          this.refreshPing()
+        }
+      })
+      socket.on('close', async () => {
+        console.log(`Stopped listening on ${location} (${type})`)
+      })
+      this.dns.add(socket)
     }
   }
 
