@@ -1,25 +1,43 @@
-# dohnut 🍩
+# Dohnut 🍩
 
-A simple DNS over HTTPS (DoH) proxy to send relay your DNS queries to a DoH server.
+DNS to DNS over HTTPS (DoH) proxy server for better performance and active countermeasures to fight for your privacy.
 
-Multi-threaded for fast performance on low-power devices like Raspberry Pi and other single board computers. Based on the low-level HTTP/2 core API in Node.js. Requires Node.js v11.4.0 or later.
+## Features
+
+**High Performance** Auto-select the fastest DoH resolver. Continuously adapts to network and service conditions by monitoring the round-trip-tip of the DoH connection using HTTP/2 PING frames.
+
+**High Availability** Allows using multiple DoH resolvers at once to provide automatic failover in case a service is unavailable.
+
+**Zero Overhead** - Network traffic does not go through Dohnut so there is no performance penalty. Only the DNS queries (very little bandwidth) are proxied.
+
+**Lightweight** - Multi-threaded architecture for fast performance on low-power devices like single board computers. Designed for Raspberry Pi and Odroid but compatible with anything that can run Node.js.
+
+**Full Encryption** - DoH encrypts all DNS queries inside a secure HTTP/2 connection. This protects DNS lookups against snooping at your local network router or ISP.
+
+**Connection Sharding** - Spread queries across multiple DoH resolvers for improved privacy. This reduces the amount of information a single DoH service can collect.
+
+**Query Spoofing** - Mask your DNS queries using fake DNS queries. Uses several randomisation techniques and samples from a public list of the top 1 million domains.
+
+**User Agent Spoofing** - Avoid tracking at the HTTP level using fake browser identifiers. Randomly chosen from a public list of real-world browser data.
 
 ## Usage
 
-Launch the Dohnut service. Port `53` requires root (`sudo`) access so for the example run it on non-privileged port `8053`. In a production environment port `53` is required since most DNS clients assume this standard port number.
+*Note: Support for running as secure services under systemd (Linux) and launchd (Mac OS) is coming soon. It technically already works but needs more documentation. Guides on integrating with Pi-hole coming soon. Also expect an easy to use desktop app.*
+
+Launch Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service.
 
 ```shell
-$ npx dohnut --local :8053 --upstream commons.host
+$ sudo npx dohnut --listen 127.0.0.1:53 --doh https://commons.host
 
-Dohnut started
+Started listening on 127.0.0.1:53 (udp4)
 ```
 
-Run a DNS lookup against your local machine on port `8053` where Dohnut is listening. The request is proxied to the Commons Host DNS over HTTPS service.
+Verify by running a DNS lookup against Dohnut. The lookup is proxied to the DoH service.
 
 ```shell
-$ dig @localhost -p 8053 iana.org
+$ dig @localhost iana.org
 
-; <<>> DiG 9.10.6 <<>> @localhost -p 8053 iana.org
+; <<>> DiG 9.10.6 <<>> @localhost iana.org
 ; (2 servers found)
 ;; global options: +cmd
 ;; Got answer:
@@ -65,7 +83,6 @@ Default: `false`
 
 Show version number
 
-
 ### `--help`
 
 Show help
@@ -74,33 +91,33 @@ Show help
 
 Public resolver names mapped to a DoH URL. Based on the [@commonshost/resolvers](https://gitlab.com/commonshost/resolvers) list.
 
-- cleanbrowsing
-- cloudflare
-- commonshost
-- google
-- keoweon
-- mozilla
-- nekomimi
-- powerdns
-- quad9
-- rubyfish
-- securedns
+- `cleanbrowsing`
+- `cloudflare`
+- `commonshost`
+- `google`
+- `keoweon`
+- `mozilla`
+- `nekomimi`
+- `powerdns`
+- `quad9`
+- `rubyfish`
+- `securedns`
 
 ## Examples
+
+### Only allow localhost connections. Proxy to the Commons Host DoH service.
+
+    --listen 127.0.0.1 ::1 --doh commonshost
 
 ### Use a custom resolver
 
     --doh https://localhost/my-own-resolver
 
-### Multiple DoH resolvers
+### Multiple DoH service can be used. Shortnames for popular services are supported.
 
-Shortnames for popular services are supported.
+    --doh commonshost cloudflare quad9 cleanbrowsing https://example.com
 
-    --doh commonshost cloudflare quad9 cleanbrowsing
-
-### Multiple DNS listeners
-
-Listen on all network interfaces using both IPv6 and IPv4.
+### Listen on all network interfaces using both IPv6 and IPv4.
 
     --listen :: 0.0.0.0
 
@@ -108,7 +125,27 @@ Listen on all network interfaces using both IPv6 and IPv4.
 
     --listen 8053
 
-### Deploying on Raspbian
+### Check the syntax of the URL and IP address arguments. No connections are attempted.
+
+    --test --doh https://example.com --listen 192.168.12.34
+
+### Send queries to one of multiple DoH services at random for increased privacy.
+
+    --load-balance random --doh quad9 cloudflare commonshost
+
+### Send queries to the fastest DoH service by measuring ping round-trip-times.
+
+    --load-balance fastest-http-ping --doh quad9 cloudflare commonshost
+
+### Randomly send fake DNS queries as disinformation to deter tracking by resolvers.
+
+    --countermeasures spoof-queries
+
+### Mimic popular web browsers by including a random User-Agent header with each request. Default is no User-Agent header.
+
+    --countermeasures spoof-useragent
+
+## Deploying on Raspbian
 
 ```shell
 $ sudo apt-get install git

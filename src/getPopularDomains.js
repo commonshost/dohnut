@@ -146,7 +146,7 @@ async function getPopularDomains (sync = true, verbose = true) {
     domains = await (sync ? loadSync : load)(listpath)
   } catch (error) {
     if (error.code === 'ENOENT') {
-      log('Downloading Cisco Umbrella list of popular domains...')
+      log('Downloading list of popular domains...')
       await download(url, archivepath)
       log('Extracting archive...')
       await unzip(archivepath, entrypath, csvpath)
