@@ -7,6 +7,7 @@ const {
     HTTP2_HEADER_ACCEPT,
     HTTP2_HEADER_CONTENT_LENGTH,
     HTTP2_HEADER_CONTENT_TYPE,
+    HTTP2_HEADER_USER_AGENT,
     HTTP2_HEADER_METHOD,
     HTTP2_HEADER_PATH,
     HTTP2_HEADER_STATUS
@@ -15,12 +16,16 @@ const {
 const UriTemplate = require('uri-templates')
 const { encode } = require('base64url')
 const dnsPacket = require('dns-packet')
+const UserAgent = require('user-agents')
 
 const DNS_MESSAGE = 'application/dns-message'
 
 let session
 let uri
 let path
+let spoofUseragent = false
+
+const useragent = new UserAgent()
 
 function getPath (uri) {
   const { pathname, search } = new URL(uri)
@@ -53,6 +58,9 @@ function dnsErrorServFail (id, query) {
 function sendQuery (query) {
   const headers = {}
   headers[HTTP2_HEADER_ACCEPT] = DNS_MESSAGE
+  if (spoofUseragent === true) {
+    headers[HTTP2_HEADER_USER_AGENT] = useragent.random().toString()
+  }
   let stream
   if (uri.varNames.includes('dns')) {
     headers[HTTP2_HEADER_METHOD] = HTTP2_METHOD_GET
@@ -106,6 +114,7 @@ parentPort.on('message', (value) => {
   if ('uri' in value) {
     console.log(`Worker ${threadId}: connecting to ${value.uri}`)
     uri = new UriTemplate(value.uri)
+    spoofUseragent = value.spoofUseragent
     path = getPath(value.uri)
     session = connect(value.uri)
     session.on('connect', () => {

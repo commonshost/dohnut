@@ -108,7 +108,7 @@ async function main () {
     })
     .option('countermeasures', {
       type: 'array',
-      choices: ['spoof-queries'],
+      choices: ['spoof-queries', 'spoof-useragent'],
       default: []
     })
     .example('')
@@ -138,6 +138,9 @@ async function main () {
     .example('')
     .example('--countermeasures spoof-queries')
     .example('Randomly send fake DNS queries as disinformation to deter tracking by resolvers.')
+    .example('')
+    .example('--countermeasures spoof-useragent')
+    .example('Mimic popular web browsers by including a random User-Agent header with each request. Default is no User-Agent header.')
     .example('')
     .example('Shortnames mapped to a DoH URL:')
     .example(Array.from(aliased.doh.keys()).sort().join(', '))

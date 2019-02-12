@@ -111,8 +111,12 @@ class Dohnut {
   }
 
   async start () {
+    const options = {
+      spoofUseragent: this.configuration.countermeasures
+        .includes('spoof-useragent')
+    }
     for (const { uri } of this.configuration.doh) {
-      const connection = new Connection(uri)
+      const connection = new Connection(uri, options)
       this.doh.push(connection)
       connection.on('response', ({ id, message }) => {
         if (this.queries.has(id)) {
@@ -222,7 +226,7 @@ class Dohnut {
 }
 
 class Connection extends EventEmitter {
-  constructor (uri) {
+  constructor (uri, options) {
     super()
     this.uri = uri
     this.worker = undefined
@@ -230,6 +234,7 @@ class Connection extends EventEmitter {
     this.state = 'disconnected' // connecting, connected
     this.pinged = false
     this.rtt = undefined
+    this.options = options
   }
 
   send (message) {
@@ -248,7 +253,8 @@ class Connection extends EventEmitter {
           this.worker.on('message', this.receive.bind(this))
           this.worker.once('exit', () => { this.worker = undefined })
         }
-        this.worker.postMessage({ uri: this.uri })
+        const { spoofUseragent } = this.options
+        this.worker.postMessage({ uri: this.uri, spoofUseragent })
         break
     }
   }
