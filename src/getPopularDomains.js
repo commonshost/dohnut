@@ -50,7 +50,7 @@ function unzip (archivepath, entrypath, csvpath) {
 
 function cleanupSync (csvpath, listpath) {
   return new Promise((resolve, reject) => {
-    const lines = readFileSync(csvpath, { encoding: 'utf8' }).split('\n')
+    const lines = readFileSync(csvpath, { encoding: 'utf8' }).split('\r\n')
     let concat = []
     for (const line of lines) {
       const [, domain] = line.split(',')
@@ -146,13 +146,15 @@ async function getPopularDomains (sync = true, verbose = true) {
     domains = await (sync ? loadSync : load)(listpath)
   } catch (error) {
     if (error.code === 'ENOENT') {
-      log('Downloading list of top million domains...')
+      log('Downloading Cisco Umbrella list of popular domains...')
       await download(url, archivepath)
       log('Extracting archive...')
       await unzip(archivepath, entrypath, csvpath)
-      log('Processing domains...')
+      log('Minifying domains...')
       await (sync ? cleanupSync : cleanup)(csvpath, listpath)
-      log('Done. Domains cached at:', listpath)
+      const sizeMB = (statSync(listpath).size / 1e6)
+        .toLocaleString(undefined, { maximumFractionDigits: 1 })
+      log(`Domains cached at: ${listpath} (${sizeMB} MB)`)
       domains = await (sync ? loadSync : load)(listpath)
     } else {
       throw error
