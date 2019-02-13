@@ -104,8 +104,8 @@ async function main () {
       alias: ['lb'],
       type: 'string',
       describe: 'Strategy when using multiple DoH resolvers',
-      choices: ['fastest-http-ping', 'random'],
-      default: 'fastest-http-ping'
+      choices: ['performance', 'privacy'],
+      default: 'performance'
     })
     .option('countermeasures', {
       type: 'array',
@@ -132,10 +132,10 @@ async function main () {
     .example('--test --doh https://example.com --listen 192.168.12.34')
     .example('Check the syntax of the URL and IP address arguments. No connections are attempted.')
     .example('')
-    .example('--load-balance random --doh quad9 cloudflare commonshost')
+    .example('--load-balance privacy --doh quad9 cloudflare commonshost')
     .example('Send queries to one of multiple DoH services at random for increased privacy.')
     .example('')
-    .example('--load-balance fastest-http-ping --doh quad9 cloudflare commonshost')
+    .example('--load-balance performance --doh quad9 cloudflare commonshost')
     .example('Send queries to the fastest DoH service by measuring ping round-trip-times.')
     .example('')
     .example('--countermeasures spoof-queries')

@@ -73,7 +73,7 @@ class Dohnut {
     this.timer = null
     this.lastPingTime = 0
     this.fastestConnection = undefined
-    this.getConnection = this.configuration.loadBalance === 'random'
+    this.getConnection = this.configuration.loadBalance === 'privacy'
       ? this.getRandomConnection : this.getFastestConnection
     this.popularDomains = undefined
   }

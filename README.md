@@ -83,11 +83,11 @@ Default: `false`
 
 Strategy when using multiple DoH resolvers.
 
-#### `--load-balance fastest-http-ping`
+#### `--load-balance performance`
 
 Best performance. Always send DNS queries to the fastest DoH resolver. Continuously monitors the round-trip-time latency to each DoH resolver using HTTP/2 PING frames.
 
-#### `--load-balance random`
+#### `--load-balance privacy`
 
 Best privacy. Uniformly distributes DNS queries across all enabled DoH resolvers.
 
@@ -157,11 +157,11 @@ Public resolver names mapped to a DoH URL. Based on the [@commonshost/resolvers]
 
 ### Send queries to one of multiple DoH services at random for increased privacy.
 
-    --load-balance random --doh quad9 cloudflare commonshost
+    --load-balance privacy --doh quad9 cloudflare commonshost
 
 ### Send queries to the fastest DoH service by measuring ping round-trip-times.
 
-    --load-balance fastest-http-ping --doh quad9 cloudflare commonshost
+    --load-balance performance --doh quad9 cloudflare commonshost
 
 ### Randomly send fake DNS queries as disinformation to deter tracking by resolvers.
 
