@@ -196,8 +196,8 @@ class Dohnut {
         const connection = this.getConnection()
         const message = { query: { id: query.id, message: query.message } }
         if (this.popularDomains !== undefined) {
-          const curviness = 4
-          const random = Math.exp(-(Math.random() * Math.E * curviness))
+          const curviness = 10
+          const random = Math.exp(-Math.random() * curviness)
           const maximum = this.popularDomains.length
           const index = Math.floor(maximum * random)
           message.query.spoofDomain = this.popularDomains[index]
