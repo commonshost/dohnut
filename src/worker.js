@@ -26,6 +26,7 @@ let path
 let spoofUseragent = false
 
 const useragent = new UserAgent()
+let randomUseragent
 
 function getPath (uri) {
   const { pathname, search } = new URL(uri)
@@ -59,7 +60,7 @@ function sendQuery (query) {
   const headers = {}
   headers[HTTP2_HEADER_ACCEPT] = DNS_MESSAGE
   if (spoofUseragent === true) {
-    headers[HTTP2_HEADER_USER_AGENT] = useragent.random().toString()
+    headers[HTTP2_HEADER_USER_AGENT] = randomUseragent
   }
   let stream
   if (uri.varNames.includes('dns')) {
@@ -166,6 +167,7 @@ parentPort.on('message', (value) => {
     console.log(`Worker ${threadId}: connecting to ${value.uri}`)
     uri = new UriTemplate(value.uri)
     spoofUseragent = value.spoofUseragent
+    randomUseragent = useragent.random().toString()
     path = getPath(value.uri)
     session = connect(value.uri)
     session.on('connect', () => {
