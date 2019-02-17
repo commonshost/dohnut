@@ -123,6 +123,12 @@ Notes:
 - Only the DoH URI hostname is resolved via the bootstrap DNS lookup. Actual user DNS queries are never exposed.
 - DoH bootstrapping is considered failsafe. Tampering during bootstrap by a DNS resolver results in a failed DoH connection. DoH uses HTTP/2 which requires a valid TLS certificate for the DoH URI hostname. No queries are exposed without a secure HTTP/2 connection.
 
+### `--config`
+
+Path to JSON config file
+
+The JSON config file options are identical to the CLI options.
+
 ### `--version`
 
 Show version number
@@ -192,6 +198,10 @@ Public resolver names mapped to a DoH URL. Based on the [@commonshost/resolvers]
 ### Bypass the operating system DNS settings to resolve the DoH service hostnames.
 
     --bootstrap 192.168.1.1 1.1.1.1 8.8.8.8 9.9.9.9
+
+### Load options from a JSON file
+
+    --config ~/dohnut-options.json
 
 ## Credits
 

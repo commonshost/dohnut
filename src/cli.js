@@ -161,6 +161,7 @@ async function main () {
     .example('')
     .example('Shortnames mapped to a DoH URI:')
     .example(Array.from(aliased.doh.keys()).sort().join(', '))
+    .config()
     .version()
     .help()
 

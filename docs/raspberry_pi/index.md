@@ -1,4 +1,4 @@
-# Raspberry Pi + Dohnut + Pi-hole
+# Dohnut + Pi-hole
 
 ## Operating System
 
@@ -18,11 +18,11 @@ Insert the flashed SD memory card into the Raspberry Pi.
 
 Connect to your network router by plugging an ethernet cable into the network port of your Raspberry Pi. Or use wi-fi if your Raspberry Pi supports it.
 
-Connect power cable to USB port to boot the Raspberry Pi. Wait a minute for it to fully boot.
+Connect power cable to USB port to boot the Raspberry Pi. Wait a minute or two for it to fully boot.
 
 ## Connecting
 
-Log in to your network router to see the IP address of your Raspberry Pi.
+Log in to your network router to find the IP address of your Raspberry Pi. Or use a port scanner to look for the device on the network.
 
 Open a terminal (MacOS/Linux) or PuTTY (Windows) and connect to the IP address of your Raspberry Pi with the `pi` username.
 
@@ -41,13 +41,13 @@ When prompted to log in, enter the default password: `raspberry`
 
 You are now logged in.
 
-## Raspbian SSH security
+## Raspbian SSH Security
 
 Immediately secure the SSH account by changing its password.
 
     $ passwd
 
-Enter the current password and enter a new password. Repeat the new password to confirm. Write the new password down somewhere or store it in a password manager.
+When asked, enter the current password (default: `raspberry`). Next, enter a new password. Repeat the new password to confirm. Write the new password down somewhere or store it in a password manager.
 
 ## Creating a Dohnut User
 
@@ -74,11 +74,28 @@ Download the latest version of Dohnut from [NPM](https://www.npmjs.com/package/d
 
     $ sudo -u dohnut -- env PATH="/home/dohnut/n/bin:$PATH" npm install --global dohnut@latest
 
+## Dohnut Configuration
+
+Create `options.json`:
+
+    $ sudo mkdir -p /etc/dohnut
+    $ sudo chown -R dohnut:dohnut /etc/dohnut
+    $ sudo -u dohnut touch /etc/dohnut/options.json
+    $ sudo -u dohnut nano /etc/dohnut/options.json
+
+Copy, paste, save, exit:
+
+```json
+{
+  "doh": ["commonshost"],
+  "bootstrap": ["1.1.1.1", "8.8.8.8", "9.9.9.9"],
+  "countermeasures": ["spoof-queries", "spoof-useragent"]
+}
+```
+
 ## Setting up systemd
 
 The [systemd](https://freedesktop.org/wiki/Software/systemd/) service manager provides access to the privileged DNS port (`53`) while securely running Dohnut with restricted permissions.
-
-Copy and paste the following files. Use a command line text editor like `nano`.
 
 Create `dohnut.service`:
 
@@ -86,21 +103,23 @@ Create `dohnut.service`:
 
 Copy, paste, save, exit:
 
-    [Unit]
-    Description=Dohnut DNS over HTTPS proxy
-    RefuseManualStart=true
+```ini
+[Unit]
+Description=Dohnut DNS over HTTPS proxy
+RefuseManualStart=true
 
-    [Service]
-    Type=notify
-    User=dohnut
-    Environment="NODE_ENV=production"
-    Environment="PATH=/home/dohnut/n/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-    ExecStart=/home/dohnut/n/bin/npx dohnut --doh commonshost --bootstrap 9.9.9.9 8.8.8.8 1.1.1.1
-    Restart=always
-    KillMode=process
-    WatchdogSec=10
-    SyslogIdentifier=dohnut
-    TimeoutStartSec=infinity
+[Service]
+Type=notify
+User=dohnut
+Environment="NODE_ENV=production"
+Environment="PATH=/home/dohnut/n/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/home/dohnut/n/bin/npx dohnut --config /etc/dohnut/options.json
+Restart=always
+KillMode=process
+WatchdogSec=10
+SyslogIdentifier=dohnut
+TimeoutStartSec=infinity
+```
 
 Create `dohnut.socket`:
 
@@ -108,16 +127,18 @@ Create `dohnut.socket`:
 
 Copy, paste, save, exit:
 
-    [Socket]
-    ListenDatagram=53000
-    ReusePort=true
+```ini
+[Socket]
+ListenDatagram=53000
+ReusePort=true
 
-    [Install]
-    WantedBy=sockets.target
+[Install]
+WantedBy=sockets.target
+```
 
-Enable the service.
+Enable Dohnut to start listening immediately and also on boot.
 
-    $ sudo systemctl --now enable dohnut
+    $ sudo systemctl --now enable dohnut.socket
 
 ## Status Check
 
@@ -156,3 +177,24 @@ Disable any other Upstream DNS servers to ensure all DNS queries make use of Doh
 ## Done!
 
 All your DNS queries now encrypted and load balanced for enhanced performance and privacy.
+
+But wait, there's more...
+
+## Updates
+
+Regularly update Node.js and Dohnut to the latest version for better performance, features, and security.
+
+```
+$ sudo -u dohnut -- env N_PREFIX="/home/dohnut/n" /home/dohnut/n/bin/n latest
+$ sudo -u dohnut -- env PATH="/home/dohnut/n/bin:$PATH" npm install --global dohnut@latest
+```
+
+## Uninstall
+
+Removing Dohnut is clean and easy.
+
+    $ sudo systemctl --now disable dohnut.socket
+    $ sudo systemctl stop dohnut
+    $ sudo rm -rf /etc/systemd/system/dohnut.* /etc/dohnut
+    $ sudo systemctl daemon-reload
+    $ sudo deluser --remove-home dohnut
