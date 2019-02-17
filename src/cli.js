@@ -10,9 +10,16 @@ function parseOptions ({
   doh = [],
   listen = [],
   loadBalance,
-  countermeasures
+  countermeasures,
+  bootstrap
 }) {
-  const configuration = { dns: [], doh: [], loadBalance, countermeasures }
+  const configuration = {
+    dns: [],
+    doh: [],
+    loadBalance,
+    countermeasures,
+    bootstrap
+  }
 
   for (const service of doh) {
     let url
@@ -85,7 +92,7 @@ async function main () {
     .option('doh', {
       type: 'array',
       alias: ['upstream', 'proxy'],
-      describe: 'URLs or shortnames of upstream DNS over HTTPS resolvers',
+      describe: 'URI Templates or shortnames of upstream DNS over HTTPS resolvers',
       default: []
     })
     .option('listen', {
@@ -113,6 +120,11 @@ async function main () {
       choices: ['spoof-queries', 'spoof-useragent'],
       default: []
     })
+    .option('bootstrap', {
+      type: 'array',
+      describe: 'IP addresses of DNS servers used to resolve the DoH URI hostname',
+      default: []
+    })
     .example('')
     .example('--listen 127.0.0.1 ::1 --doh commonshost')
     .example('Only allow localhost connections. Proxy to the Commons Host DoH service.')
@@ -130,7 +142,7 @@ async function main () {
     .example('Listen on a non-privileged port (>=1024).')
     .example('')
     .example('--test --doh https://example.com --listen 192.168.12.34')
-    .example('Check the syntax of the URL and IP address arguments. No connections are attempted.')
+    .example('Check the syntax of the URI and IP address arguments. No connections are attempted.')
     .example('')
     .example('--load-balance privacy --doh quad9 cloudflare commonshost')
     .example('Send queries to one of multiple DoH services at random for increased privacy.')
@@ -144,7 +156,10 @@ async function main () {
     .example('--countermeasures spoof-useragent')
     .example('Mimic popular web browsers by including a random User-Agent header with each request. Default is no User-Agent header.')
     .example('')
-    .example('Shortnames mapped to a DoH URL:')
+    .example('--bootstrap 192.168.1.1 1.1.1.1 8.8.8.8 9.9.9.9')
+    .example('Bypass the operating system DNS settings to resolve the DoH service hostnames.')
+    .example('')
+    .example('Shortnames mapped to a DoH URI:')
     .example(Array.from(aliased.doh.keys()).sort().join(', '))
     .version()
     .help()

@@ -13,6 +13,8 @@ const {
     HTTP2_HEADER_STATUS
   }
 } = require('http2')
+const { Resolver } = require('dns')
+const { isIPv6 } = require('net')
 const UriTemplate = require('uri-templates')
 const { encode } = require('base64url')
 const dnsPacket = require('dns-packet')
@@ -111,6 +113,46 @@ function spoofQuery (domain) {
   }
 }
 
+function lookupCustomDnsServers (servers) {
+  const resolver = new Resolver()
+  resolver.setServers(servers)
+  return (hostname, { family, all = false, verbatim = false }, callback) => {
+    function onResolve (error, records) {
+      if (error) {
+        callback(error)
+      } else if (all === true) {
+        const mapped = records.map((address) => ({
+          address,
+          family: isIPv6(address) ? 6 : 4
+        }))
+        if (verbatim === true) {
+          callback(null, records)
+        } else {
+          const sorted = mapped.sort(({ family }) => family === 6 ? -1 : 1)
+          callback(null, sorted)
+        }
+      } else {
+        let first
+        if (verbatim === true) {
+          first = records[0]
+        } else {
+          first = records.find(isIPv6) || records[0]
+        }
+        const family = isIPv6(first) ? 6 : 4
+        callback(null, first, family)
+      }
+    }
+
+    if (family === 4) {
+      resolver.resolve4(hostname, onResolve)
+    } else if (family === 6) {
+      resolver.resolve6(hostname, onResolve)
+    } else {
+      resolver.resolve(hostname, onResolve)
+    }
+  }
+}
+
 parentPort.on('message', (value) => {
   if ('query' in value) {
     if (session.destroyed) {
@@ -169,7 +211,11 @@ parentPort.on('message', (value) => {
     spoofUseragent = value.spoofUseragent
     randomUseragent = useragent.random().toString()
     path = getPath(value.uri)
-    session = connect(value.uri)
+    const options = {}
+    if (value.bootstrap.length > 0) {
+      options.lookup = lookupCustomDnsServers(value.bootstrap)
+    }
+    session = connect(value.uri, options)
     session.on('connect', () => {
       parentPort.postMessage({ state: 'connected' })
     })

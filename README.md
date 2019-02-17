@@ -81,7 +81,9 @@ Default: `false`
 
 ### `--load-balance`, `--lb`
 
-Strategy when using multiple DoH resolvers.
+The strategy to use with multiple DoH resolvers.
+
+Default: `performance`
 
 #### `--load-balance performance`
 
@@ -93,7 +95,9 @@ Best privacy. Uniformly distributes DNS queries across all enabled DoH resolvers
 
 ### `--countermeasures`
 
-Special tactics to protect your privacy.
+One or more special tactics to protect your privacy.
+
+Default: `[]`
 
 #### `--countermeasures spoof-queries`
 
@@ -104,6 +108,20 @@ Whenever a DNS query is proxied, a fake query is also generated. The fake query 
 #### `--countermeasures spoof-useragent`
 
 Sends a fake `User-Agent` HTTP header to prevent tracking. Makes it look like every DoH request is by a different browser. Randomly samples actual user agent strings from a public data source of real-world web traffic.
+
+## `--bootstrap`
+
+Default: `[]`
+
+One or more IPv4 or IPv6 addresses of DNS resolvers. These are used to perform the initial DNS lookup for the DoH URI hostname.
+
+If this option is not specified, the operating system resolves the DoH URI hostname based on your network settings, typically provided automatically via DHCP or manually configured. This option is used to avoid a loop when Dohnut itself is the DNS resolver of the operating system.
+
+A possible loop scenario is when Dohnut provides transparent DoH proxying as the upstream DNS server for a [Pi-hole](https://pi-hole.net) service. If the operating system running Dohnut uses the Pi-hole server as its DNS server, a lookup loop is created. To break out of the loop, set the bootstrap option to the IP address of the DNS server of your LAN router, your ISP, or a [public DNS service](https://en.wikipedia.org/wiki/Public_recursive_name_server).
+
+Notes:
+- Only the DoH URI hostname is resolved via the bootstrap DNS lookup. Actual user DNS queries are never exposed.
+- DoH bootstrapping is considered failsafe. Tampering during bootstrap by a DNS resolver results in a failed DoH connection. DoH uses HTTP/2 which requires a valid TLS certificate for the DoH URI hostname. No queries are exposed without a secure HTTP/2 connection.
 
 ### `--version`
 
@@ -170,6 +188,10 @@ Public resolver names mapped to a DoH URL. Based on the [@commonshost/resolvers]
 ### Mimic popular web browsers by including a random User-Agent header with each request. Default is no User-Agent header.
 
     --countermeasures spoof-useragent
+
+### Bypass the operating system DNS settings to resolve the DoH service hostnames.
+
+    --bootstrap 192.168.1.1 1.1.1.1 8.8.8.8 9.9.9.9
 
 ## Deploying on Raspbian
 

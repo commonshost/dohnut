@@ -112,6 +112,7 @@ class Dohnut {
 
   async start () {
     const options = {
+      bootstrap: this.configuration.bootstrap,
       spoofUseragent: this.configuration.countermeasures
         .includes('spoof-useragent')
     }
@@ -256,8 +257,11 @@ class Connection extends EventEmitter {
           this.worker.on('message', this.receive.bind(this))
           this.worker.once('exit', () => { this.worker = undefined })
         }
-        const { spoofUseragent } = this.options
-        this.worker.postMessage({ uri: this.uri, spoofUseragent })
+        this.worker.postMessage({
+          uri: this.uri,
+          spoofUseragent: this.options.spoofUseragent,
+          bootstrap: this.options.bootstrap
+        })
         break
     }
   }
