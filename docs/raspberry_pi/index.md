@@ -1,12 +1,16 @@
-# Setting up Dohnut on a Raspberry Pi
+# Raspberry Pi + Dohnut + Pi-hole
 
 ## Operating System
 
-Download the latest Raspbian Lite image from the Raspberry Pi website.
+Download the latest **Raspbian Lite** image from the Raspberry Pi website.
 
-Install Etcher and use it to flash the Raspbian Lite image to an SD memory card.
+https://www.raspberrypi.org/downloads/raspbian/
 
-Re-insert the SD card into your computer. Create an empty file called `ssh` at the top level of the SD card. This enables network access via SSH, a command line interface, for "headless" installation. Skip this if you prefer attaching a keyboard and monitor for graphical desktop access.
+Install **balenaEtcher** and use it to flash the Raspbian Lite image to an SD memory card.
+
+https://www.balena.io/etcher/
+
+Re-insert the SD card into your computer. Create an empty file or directory called `ssh` at the top level of the SD card. This enables network access via SSH, a command line interface, for "headless" installation. Skip this step if you prefer attaching a keyboard and monitor for graphical desktop access.
 
 ## Hardware
 
@@ -37,68 +41,48 @@ When prompted to log in, enter the default password: `raspberry`
 
 You are now logged in.
 
-    Linux raspberrypi 4.14.79+ #1159 Sun Nov 4 17:28:08 GMT 2018 armv6l
+## Raspbian SSH security
 
-    The programs included with the Debian GNU/Linux system are free software;
-    the exact distribution terms for each program are described in the
-    individual files in /usr/share/doc/*/copyright.
+Immediately secure the SSH account by changing its password.
 
-    Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-    permitted by applicable law.
+    $ passwd
 
-    SSH is enabled and the default password for the 'pi' user has not been changed.
-    This is a security risk - please login as the 'pi' user and type 'passwd' to set a new password.
+Enter the current password and enter a new password. Repeat the new password to confirm. Write the new password down somewhere or store it in a password manager.
 
-    pi@raspberrypi:~ $
+## Creating a Dohnut User
 
-## Basic Raspbian configuration
+Services should run under their own restricted user account. This prevents them from affecting unrelated files and processes in the case of a bug or compromise.
 
-Immediately secure the SSH account by changing its password. Run the `passwd` command. Confirm the current password and enter a new password. Repeat the new password to confirm.
-
-    pi@raspberrypi:~ $ passwd
-    Changing password for pi.
-    (current) UNIX password: 
-    Enter new UNIX password: 
-    Retype new UNIX password: 
-    passwd: password updated successfully
+    $ sudo useradd --system --create-home --shell /bin/false dohnut
 
 ## Installing Node.js
 
-Dohnut requires a more recent version of Node.js than offered by the official Raspbian package repository. To avoid potential compatibility issues with other software, we can install the latest version of Node.js just for Dohnut. Using a version manager for Node.js, like `n`, offers easy installation and future upgrades.
-
-    pi@raspberrypi:~ $ sudo useradd --system --create-home --shell /bin/false dohnut
+Dohnut requires a more recent version of [Node.js](https://nodejs.org) than offered by the official Raspbian package repository. To avoid potential compatibility issues with other software, we can install the latest version of Node.js just for Dohnut. Using a version manager for Node.js, like `n`, offers easy installation and future upgrades.
 
 Ensure these system dependencies are installed to allow building native NPM packages from source if necessary.
 
-    pi@raspberrypi:~ $ sudo apt-get update
-    pi@raspberrypi:~ $ sudo apt-get install git curl libsystemd-dev build-essential libssl-dev -y -qq
+    $ sudo apt-get update
+    $ sudo apt-get install git curl libsystemd-dev build-essential libssl-dev -y -qq
 
 Install `n` and the latest version of Node.js.
 
-    pi@raspberrypi:~ $ sudo -u dohnut curl -L https://git.io/n-install | bash -s -- -y latest
+    $ sudo -u dohnut curl -L https://git.io/n-install | bash -s -- -y latest
 
-<!--
-Reload the updated shell configuration to enable Node.js.
+## Installing Dohnut
 
-    pi@raspberrypi:~ $ . /home/pi/.bashrc
+Download the latest version of Dohnut from [NPM](https://www.npmjs.com/package/dohnut) and install it inside the restricted `dohnut` user's home directory. Nothing else on the system is affected.
 
-Give Node.js access to privileged network ports while running under the 
-
-    pi@raspberrypi:~ $ sudo setcap cap_net_bind_service=+ep `readlink -f \`which node\``
-    pi@raspberrypi:~ $ npx dohnut
--->
+    $ sudo -u dohnut -- env PATH="/home/dohnut/n/bin:$PATH" npm install --global dohnut@latest
 
 ## Setting up systemd
 
-The systemd service manager provides access to the privileged DNS port (`53`) while securely running Dohnut with restricted permissions.
+The [systemd](https://freedesktop.org/wiki/Software/systemd/) service manager provides access to the privileged DNS port (`53`) while securely running Dohnut with restricted permissions.
 
-Copy and paste these systemd files. Use an editor like `nano`.
-
-    pi@raspberrypi:~ $ sudo nano /etc/systemd/system/dohnut.service
+Copy and paste the following files. Use a command line text editor like `nano`.
 
 Create `dohnut.service`:
 
-    pi@raspberrypi:~ $ sudo nano /etc/systemd/system/dohnut.service
+    $ sudo nano /etc/systemd/system/dohnut.service
 
 Copy, paste, save, exit:
 
@@ -111,7 +95,7 @@ Copy, paste, save, exit:
     User=dohnut
     Environment="NODE_ENV=production"
     Environment="PATH=/home/dohnut/n/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-    ExecStart=/home/dohnut/n/bin/npx dohnut --doh commonshost
+    ExecStart=/home/dohnut/n/bin/npx dohnut --doh commonshost --bootstrap 9.9.9.9 8.8.8.8 1.1.1.1
     Restart=always
     KillMode=process
     WatchdogSec=10
@@ -120,7 +104,7 @@ Copy, paste, save, exit:
 
 Create `dohnut.socket`:
 
-    pi@raspberrypi:~ $ sudo nano /etc/systemd/system/dohnut.socket
+    $ sudo nano /etc/systemd/system/dohnut.socket
 
 Copy, paste, save, exit:
 
@@ -133,11 +117,42 @@ Copy, paste, save, exit:
 
 Enable the service.
 
-    sudo systemctl --now enable dohnut
+    $ sudo systemctl --now enable dohnut
 
-## Extras
+## Status Check
 
-sudo systemctl status dohnut
+Check whether systemd is listening.
 
-    pi@raspberrypi:~ $ sudo -u dohnut N_PREFIX=/home/dohnut/n /home/dohnut/n/bin/n latest
-    pi@raspberrypi:~ $ sudo -u dohnut /home/dohnut/n/bin/node -v
+    $ systemctl status dohnut.socket
+
+Try a DNS lookup. This causes systemd to start Dohnut. It may take a few seconds for the first reply.
+
+    $ dig @127.0.0.1 -p 53000 example.com
+
+Verify that Dohnut is running.
+
+    $ systemctl status dohnut.service
+
+Check the system logs if anything went wrong.
+
+    $ journalctl -xe
+
+Follow the Dohnut logs to keep an eye on things.
+
+    $ journalctl -f -n 100 -u dohnut
+
+## Configure the Pi-hole
+
+Visit the Pi-hole dashboard in your browser. Log in as administrator.
+
+https://pi.hole/admin (or its IP address)
+
+Go to **Settings** > **DNS** > **Upstream DNS Servers** and enter the Dohnut IP address and port using the hash (`#`) syntax. Enable the checkbox.
+
+    127.0.0.1#53000
+
+Disable any other Upstream DNS servers to ensure all DNS queries make use of Dohnut.
+
+## Done!
+
+All your DNS queries now encrypted and load balanced for enhanced performance and privacy.
