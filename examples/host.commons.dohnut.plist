@@ -25,7 +25,7 @@
     </array>
     <key>Sockets</key>
     <dict>
-      <key>dohnut</key>
+      <key>dohnut.socket</key>
       <array>
         <dict>
           <key>SockFamily</key>

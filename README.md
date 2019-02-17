@@ -193,15 +193,6 @@ Public resolver names mapped to a DoH URL. Based on the [@commonshost/resolvers]
 
     --bootstrap 192.168.1.1 1.1.1.1 8.8.8.8 9.9.9.9
 
-## Deploying on Raspbian
-
-```shell
-$ sudo apt-get install git
-$ curl -L https://git.io/n-install | bash -s -- -y latest
-$ sudo setcap cap_net_bind_service=+ep `readlink -f \`which node\``
-$ npx dohnut
-```
-
 ## Credits
 
 Made by [Kenny Shen](https://www.machinesung.com) and [Sebastiaan Deckers](https://twitter.com/sebdeckers) for 🐑 [Commons Host](https://commons.host).

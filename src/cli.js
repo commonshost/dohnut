@@ -59,7 +59,7 @@ function parseOptions ({
     case 'linux':
       const socketActivation = require('socket-activation')
       try {
-        for (const fd of socketActivation.collect('dohnut')) {
+        for (const fd of socketActivation.collect('dohnut.socket')) {
           configuration.dns.push({ fd, type: 'udp4' })
         }
       } catch (error) {
