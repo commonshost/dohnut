@@ -180,6 +180,9 @@ async function main () {
     process.on(signal, async () => {
       console.log(`${signal} received`)
       await dohnut.stop()
+      if (notify) {
+        notify.stopWatchdogMode()
+      }
     })
   }
 
