@@ -119,6 +119,7 @@ KillMode=process
 WatchdogSec=10
 SyslogIdentifier=dohnut
 TimeoutStartSec=infinity
+CacheDirectory=dohnut
 ```
 
 Create `dohnut.socket`:

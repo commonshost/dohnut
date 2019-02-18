@@ -136,10 +136,11 @@ function load (listpath) {
 async function getPopularDomains (sync = true, verbose = true) {
   const url = LIST_URL
   const scratch = tmpdir()
+  const cache = process.env.CACHE_DIRECTORY || process.cwd()
   const archivepath = join(scratch, 'top-1m.csv.zip')
   const entrypath = 'top-1m.csv'
   const csvpath = join(scratch, 'top-1m.csv')
-  const listpath = join(process.cwd(), '.top-1m.txt.br')
+  const listpath = join(cache, '.top-1m.txt.br')
   const log = verbose ? console.log : Function
   let domains
   try {
