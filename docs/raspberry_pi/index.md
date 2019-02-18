@@ -89,7 +89,8 @@ Copy, paste, save, exit:
 {
   "doh": ["commonshost"],
   "bootstrap": ["1.1.1.1", "8.8.8.8", "9.9.9.9"],
-  "countermeasures": ["spoof-queries", "spoof-useragent"]
+  "countermeasures": ["spoof-queries", "spoof-useragent"],
+  "datagram-protocol": "udp4"
 }
 ```
 
@@ -131,7 +132,7 @@ Copy, paste, save, exit:
 
 ```ini
 [Socket]
-ListenDatagram=53000
+ListenDatagram=127.0.0.1:53000
 ReusePort=true
 
 [Install]

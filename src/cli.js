@@ -11,14 +11,16 @@ function parseOptions ({
   listen = [],
   loadBalance,
   countermeasures,
-  bootstrap
+  bootstrap,
+  datagramProtocol
 }) {
   const configuration = {
     dns: [],
     doh: [],
     loadBalance,
     countermeasures,
-    bootstrap
+    bootstrap,
+    datagramProtocol
   }
 
   for (const service of doh) {
@@ -40,8 +42,8 @@ function parseOptions ({
     let type, address, port
     if (matchPort.test(listener)) {
       ({ $1: port } = RegExp)
-      type = 'udp4'
-      address = '127.0.0.1'
+      type = datagramProtocol
+      address = datagramProtocol === 'udp4' ? '127.0.0.1' : '::1'
     } else if (matchIpv4.test(listener)) {
       ({ $1: address, $2: port } = RegExp)
       type = 'udp4'
@@ -60,7 +62,7 @@ function parseOptions ({
       const socketActivation = require('socket-activation')
       try {
         for (const fd of socketActivation.collect('dohnut')) {
-          configuration.dns.push({ fd, type: 'udp4' })
+          configuration.dns.push({ fd, type: datagramProtocol })
         }
       } catch (error) {
         switch (error.code) {
@@ -125,6 +127,12 @@ async function main () {
       describe: 'IP addresses of DNS servers used to resolve the DoH URI hostname',
       default: []
     })
+    .option('datagram-protocol', {
+      type: 'string',
+      describe: 'Use IPv4 or IPv6 with unspecified listen addresses and file descriptors',
+      choices: ['udp4', 'udp6'],
+      default: 'udp6'
+    })
     .example('')
     .example('--listen 127.0.0.1 ::1 --doh commonshost')
     .example('Only allow localhost connections. Proxy to the Commons Host DoH service.')
@@ -140,6 +148,12 @@ async function main () {
     .example('')
     .example('--listen 8053')
     .example('Listen on a non-privileged port (>=1024).')
+    .example('')
+    .example('--port 53 --datagram-protocol udp4')
+    .example('Listen on 127.0.0.1:53 using UDP over IPv4.')
+    .example('')
+    .example('--port 53 --datagram-protocol udp6')
+    .example('Listen on [::1]:53 using UDP over IPv6.')
     .example('')
     .example('--test --doh https://example.com --listen 192.168.12.34')
     .example('Check the syntax of the URI and IP address arguments. No connections are attempted.')
@@ -157,7 +171,7 @@ async function main () {
     .example('Mimic popular web browsers by including a random User-Agent header with each request. Default is no User-Agent header.')
     .example('')
     .example('--bootstrap 192.168.1.1 1.1.1.1 8.8.8.8 9.9.9.9')
-    .example('Bypass the operating system DNS settings to resolve the DoH service hostnames.')
+    .example('Bypass the operating system DNS settings when resolving a DoH service hostname.')
     .example('')
     .example('Shortnames mapped to a DoH URI:')
     .example(Array.from(aliased.doh.keys()).sort().join(', '))

@@ -123,6 +123,14 @@ Notes:
 - Only the DoH URI hostname is resolved via the bootstrap DNS lookup. Actual user DNS queries are never exposed.
 - DoH bootstrapping is considered failsafe. Tampering during bootstrap by a DNS resolver results in a failed DoH connection. DoH uses HTTP/2 which requires a valid TLS certificate for the DoH URI hostname. No queries are exposed without a secure HTTP/2 connection.
 
+### `--datagram-protocol`
+
+Default: `udp6`
+
+Sets the protocol to use for local listening UDP sockets when the IP address is not specified. For example if `--listen` is used with only a port number. Or when a socket file descriptor is provided by a service manager like systemd (Linux) or launchd (macOS).
+
+Set to `udp4` to use IPv4. Set to `udp6` to use IPv6.
+
 ### `--config`
 
 Path to JSON config file
@@ -174,6 +182,14 @@ Public resolver names mapped to a DoH URL. Based on the [@commonshost/resolvers]
 ### Listen on a non-privileged port (>=1024).
 
     --listen 8053
+
+### Listen on `127.0.0.1:53` using UDP over IPv4.
+
+    --port 53 --datagram-protocol udp4
+
+### Listen on `[::1]:53` using UDP over IPv6.
+
+    --port 53 --datagram-protocol udp6
 
 ### Check the syntax of the URL and IP address arguments. No connections are attempted.
 
