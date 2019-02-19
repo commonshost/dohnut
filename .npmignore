@@ -2,3 +2,4 @@
 Dockerfile
 test/
 docs/
+*.png
