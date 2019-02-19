@@ -6,6 +6,8 @@ https://help.commons.host/dohnut/
 
 Dohnut works with any open standard ([RFC8484](https://tools.ietf.org/html/rfc8484)) compliant DoH provider, including the [Commons Host](https://commons.host) DoH service.
 
+![Dohnut overview diagram](./dohnut-overview.png)
+
 ## Features
 
 **High Performance** Auto-select the fastest DoH resolver. Continuously adapts to network and service conditions by monitoring the round-trip-tip of the DoH connection using HTTP/2 PING frames.
