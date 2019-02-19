@@ -1,5 +1,11 @@
+# Dohnut for macOS
+
+Run Dohnut using the macOS launchd service manager.
+
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
   <dict>
     <key>Label</key>
@@ -8,20 +14,29 @@
     <array>
       <!--
         Node.js binary path. Must be an absolute file path.
-        Find the path by running: which node
+        Find the Node.js path by running this command in Terminal:
+        $ which node
+        $ which dohnut // Does this work?
       -->
-      <string>/Users/sebdeckers/n/bin/node</string>
-      <string>/Users/sebdeckers/code/commonshost/dohnut/src/bin.js</string>
+      <!-- <string>/Users/sebdeckers/n/bin/node</string> -->
+      <!-- /Users/sebdeckers/n/bin/dohnut // Does this work? -->
+
+      <!--
+        Dohnut entry point path.
+      -->
+      <!-- <string>/Users/sebdeckers/code/commonshost/dohnut/src/bin.js</string> -->
 
       <string>--load-balance</string>
-      <string>random</string>
+      <string>performance</string>
 
       <string>--doh</string>
       <string>https://example.com</string>
       <string>commonshost</string>
-     <!--  <string>cleanbrowsing</string>
+      <!--
+      <string>cleanbrowsing</string>
+      <string>cloudflare</string>
       <string>quad9</string>
-      <string>cloudflare</string> -->
+      -->
     </array>
     <key>Sockets</key>
     <dict>
@@ -45,3 +60,4 @@
     <string>/tmp/host.commons.dohnut.out</string>
   </dict>
 </plist>
+```
