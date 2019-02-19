@@ -1,6 +1,8 @@
 # CLI
 
-## `--doh`, `--upstream`, `--proxy`
+## Options
+
+### `--doh`, `--upstream`, `--proxy`
 
 Array of URLs or shortnames of upstream DNS over HTTPS resolvers.
 
@@ -8,49 +10,49 @@ Queries are distributed randomly over all resolvers.
 
 Default: `[ "https://commons.host" ]`
 
-## `--listen`, `--local`, `-l`
+### `--listen`, `--local`, `-l`
 
 Array of IPs and ports for the local DNS server.
 
 Default: `[ "127.0.0.1:53", "[::1]:53" ]`
 
-## `--test`, `--validate`, `--configtest`
+### `--test`, `--validate`, `--configtest`
 
 Validate the arguments without starting the server. Process exit code `1` indicates failure, or `0` for success.
 
 Default: `false`
 
-## `--load-balance`, `--lb`
+### `--load-balance`, `--lb`
 
 The strategy to use with multiple DoH resolvers.
 
 Default: `performance`
 
-### `--load-balance performance`
+#### `--load-balance performance`
 
 Best performance. Always send DNS queries to the fastest DoH resolver. Continuously monitors the round-trip-time latency to each DoH resolver using HTTP/2 PING frames.
 
-### `--load-balance privacy`
+#### `--load-balance privacy`
 
 Best privacy. Uniformly distributes DNS queries across all enabled DoH resolvers.
 
-## `--countermeasures`
+### `--countermeasures`
 
 One or more special tactics to protect your privacy.
 
 Default: `[]`
 
-### `--countermeasures spoof-queries`
+#### `--countermeasures spoof-queries`
 
 Adds plausible deniability to any legitimate DNS query. Makes it hard for a DoH resolver to profile your DNS queries.
 
 Whenever a DNS query is proxied, a fake query is also generated. The fake query is for a domain from a public top 1 million DNS domains list, sampled by an exponential distribution. To resist detection, the fake query is sent randomly before, after, with a delay, or not at all.
 
-### `--countermeasures spoof-useragent`
+#### `--countermeasures spoof-useragent`
 
 Sends a fake `User-Agent` HTTP header to prevent tracking. Makes it look like every DoH request is by a different browser. Randomly samples actual user agent strings from a public data source of real-world web traffic.
 
-## `--bootstrap`
+### `--bootstrap`
 
 Default: `[]`
 
@@ -64,7 +66,7 @@ Notes:
 - Only the DoH URI hostname is resolved via the bootstrap DNS lookup. Actual user DNS queries are never exposed.
 - DoH bootstrapping is considered failsafe. Tampering during bootstrap by a DNS resolver results in a failed DoH connection. DoH uses HTTP/2 which requires a valid TLS certificate for the DoH URI hostname. No queries are exposed without a secure HTTP/2 connection.
 
-## `--datagram-protocol`
+### `--datagram-protocol`
 
 Default: `udp6`
 
@@ -72,17 +74,17 @@ Sets the protocol to use for local listening UDP sockets when the IP address is 
 
 Set to `udp4` to use IPv4. Set to `udp6` to use IPv6.
 
-## `--config`
+### `--config`
 
 Path to JSON config file
 
 The JSON config file options are identical to the CLI options.
 
-## `--version`
+### `--version`
 
 Show version number
 
-## `--help`
+### `--help`
 
 Show help
 
@@ -102,7 +104,7 @@ Public resolver names mapped to a DoH URL. Based on the [@commonshost/resolvers]
 - `rubyfish`
 - `securedns`
 
-# Examples
+## Examples
 
 Only allow localhost connections. Proxy to the Commons Host DoH service.
 

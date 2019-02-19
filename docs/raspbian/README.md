@@ -1,6 +1,6 @@
-# Dohnut on Raspbian
+# Dohnut with Raspbian
 
-This guide explains how to set up Raspbian on a Raspberry Pi computer. You can then run [Dohnut with systemd](../systemd).
+This guide explains how to set up [Raspbian Linux](http://www.raspbian.org) on a [Raspberry Pi](https://www.raspberrypi.org) computer. You can then run [Dohnut with systemd](../systemd). Raspbian is also a great platform to run [Dohnut with Pi-hole](../pihole).
 
 ## Requirements
 

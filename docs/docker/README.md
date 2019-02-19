@@ -10,7 +10,7 @@ Note: Dohnut inside the container can not run on port `53` since that is already
 
 ## Dohnut Options
 
-See the [command line interface](./cli) reference.
+See the [command line interface](../cli) reference.
 
 ## Docker Options
 

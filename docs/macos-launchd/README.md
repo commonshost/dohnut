@@ -1,4 +1,4 @@
-# Dohnut on macOS with `launchd`
+# Dohnut with `launchd` (macOS)
 
 Run Dohnut as a background process using the macOS `launchd` service manager.
 
@@ -139,7 +139,7 @@ To make changes and apply, unload the service and re-load it.
 
 Go to **🍎** > **System Preferences** > **Network** > **Advanced** > **DNS** and set `127.0.0.1` as your DNS server (remove any others).
 
-## Done!
+## Verify
 
 Your first DNS query should activate Dohnut.
 

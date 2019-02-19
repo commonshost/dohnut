@@ -1,4 +1,4 @@
-# Dohnut and Pi-hole
+# Dohnut with Pi-hole
 
 [Pi-hole](https://pi-hole.net) is an effective way to block ads across all devices on a network. It provides many powerful options and is easy to deploy and manage.
 
@@ -44,7 +44,5 @@ Enter the Dohnut IP address and port using the hash syntax (`address#port`). Ena
     127.0.0.1#53000
 
 Disable any other Upstream DNS servers to ensure all DNS queries make use of Dohnut.
-
-## Done
 
 All your DNS queries through Pi-hole are now encrypted and load balanced for enhanced security, privacy, and performance.

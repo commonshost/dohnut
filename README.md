@@ -1,6 +1,10 @@
-# Dohnut 🍩
+# Dohnut
 
-DNS to DNS over HTTPS (DoH) proxy server for better performance and active countermeasures to fight for your privacy.
+Dohnut is a DNS to DNS-over-HTTPS (DoH) proxy server. Dohnut improves the performance, security, and privacy of your DNS traffic.
+
+https://help.commons.host/dohnut/
+
+Dohnut works with any open standard ([RFC8484](https://tools.ietf.org/html/rfc8484)) compliant DoH provider, including the [Commons Host](https://commons.host) DoH service.
 
 ## Features
 
@@ -22,12 +26,15 @@ DNS to DNS over HTTPS (DoH) proxy server for better performance and active count
 
 ## Usage
 
+Dohnut is lightweight and cross-platform. Dohnut can operate standalone or with other DNS tools like [Pi-hole](https://pi-hole.net).
+
 Dohnut can be used in several ways:
 
 - [Command line interface](./cli)
-- [Docker image](./docker)
-- [Linux: Managed by systemd](./systemd)
-- [macOS: Managed by launchd](./macos)
+- [Docker: container image](./docker)
+- [Linux: managed by systemd](./systemd)
+- [macOS: managed by launchd](./macos)
+- [Pi-hole: upstream DNS server](./pihole)
 
 This example launches Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service. See the [command line interface](./cli) reference for more options.
 
@@ -37,7 +44,7 @@ $ sudo npx dohnut --listen 127.0.0.1:53 --doh https://commons.host
 Started listening on 127.0.0.1:53 (udp4)
 ```
 
-Verify by running a DNS lookup against Dohnut. The lookup is proxied to the DoH service.
+Verify by running a DNS lookup against Dohnut. The query is proxied to the DoH service.
 
 ```shell
 $ dig @localhost iana.org

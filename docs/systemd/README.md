@@ -1,6 +1,6 @@
-# Dohnut and systemd
+# Dohnut with systemd (Linux)
 
-This guide uses some commands specific to Debian-based Linux distros. This should work with popular platforms like Raspbian and Ubuntu.
+This guide uses some commands specific to Debian-based Linux distros. This should work with popular platforms like Raspbian and Ubuntu. To use Dohnut with systemd on other flavours of Linux will require minor changes to the installation procedure.
 
 See the [Raspbian guide](../raspbian) to get started from scratch with Dohnut on a Raspberry Pi.
 
@@ -121,8 +121,6 @@ Check the system logs if anything went wrong.
 Follow the Dohnut logs to keep an eye on things.
 
     $ journalctl -f -n 100 -u dohnut
-
-## Done!
 
 But wait, there's more...
 
