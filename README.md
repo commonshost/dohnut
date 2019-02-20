@@ -4,7 +4,7 @@ Dohnut is a DNS to DNS-over-HTTPS (DoH) proxy server. Dohnut improves the perfor
 
 https://help.commons.host/dohnut/
 
-Dohnut works with any open standard ([RFC8484](https://tools.ietf.org/html/rfc8484)) compliant DoH provider, including the [Commons Host](https://commons.host) DoH service.
+Dohnut works with any open standard ([RFC8484](https://tools.ietf.org/html/rfc8484)) compliant DoH provider, including the [Commons Host](https://commons.host) DoH service and [many others](http://dns-channel.github.io/#recsrv).
 
 ![Dohnut overview diagram](./dohnut-overview.png)
 
