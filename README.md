@@ -32,11 +32,11 @@ Dohnut is lightweight and cross-platform. Dohnut can operate standalone or with 
 
 Dohnut can be used in several ways:
 
-- [Command line interface](./cli)
-- [Docker: container image](./docker)
-- [Linux: managed by systemd](./systemd)
-- [macOS: managed by launchd](./macos)
-- [Pi-hole: upstream DNS server](./pihole)
+- [Command line interface](./docs/cli)
+- [Docker: container image](./docs/docker)
+- [Linux: managed by systemd](./docs/systemd)
+- [macOS: managed by launchd](./docs/macos)
+- [Pi-hole: upstream DNS server](./docs/pihole)
 
 This example launches Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service. See the [command line interface](./cli) reference for more options.
 
