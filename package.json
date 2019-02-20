@@ -8,9 +8,9 @@
   "contributors": [
     "Sebastiaan Deckers <sebdeckers83@gmail.com>"
   ],
-  "main": "server/master.js",
+  "main": "source/master.js",
   "bin": {
-    "dohnut": "server/bin.js"
+    "dohnut": "source/bin.js"
   },
   "scripts": {
     "test": "npm run lint && npm run proof",
