@@ -1,5 +1,20 @@
 # CLI
 
+## Installation
+
+Try out Dohnut using the `npx` tool that is included with Node.js. This downloads and installs Dohnut to a temporary directory, runs the `dohnut` command, and then cleans up all files without a trace once the process terminates. It always downloads the latest version so this can also be used to auto-update Dohnut as part of long-running service processes.
+
+```shell
+$ npx dohnut [OPTIONS]
+```
+
+Installing Dohnut as a global command is a good way to pin a specific version and minimise startup time.
+
+```shell
+$ npm install --global dohnut
+$ dohnut [OPTIONS]
+```
+
 ## Options
 
 ### `--doh`, `--upstream`, `--proxy`
