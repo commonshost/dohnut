@@ -15,10 +15,10 @@ RUN apt-get install \
   net-tools
 
 COPY package.json /root/dohnut/
-COPY src/ /root/dohnut/src/
+COPY server/ /root/dohnut/server/
 
 RUN cd /root/dohnut && npm install
 
-RUN ln -s /root/dohnut/src/bin.js /usr/local/bin/dohnut
+RUN ln -s /root/dohnut/server/bin.js /usr/local/bin/dohnut
 
 ENTRYPOINT ["dohnut"]
