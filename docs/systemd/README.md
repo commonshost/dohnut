@@ -23,7 +23,7 @@ Ensure these system dependencies are installed to allow building native NPM pack
 
 Install `n` and the latest version of Node.js.
 
-    $ sudo -u dohnut curl -L https://git.io/n-install | bash -s -- -y latest
+    $ curl -L https://git.io/n-install | sudo -u dohnut bash -s -- -y latest
 
 ## Installing Dohnut
 
