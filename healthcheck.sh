@@ -3,7 +3,7 @@
 set -xe
 
 # determine which port node is listening on since it can be set at runtime
-PORT="$(netstat -lnp | grep node | awk -F "[ :]+" '{print $5}')"
+PORT="$(netstat -tulpn | grep -E 'node|qemu' | awk -F "[ :]+" '{print $5}')"
 
 # test unbound dns response to sigfail.verteiltesysteme.net
 # fail if response does not include SERVFAIL
