@@ -30,4 +30,4 @@ after_success:
   - echo ${DOCKER_PASSWORD} | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - make push ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
   - go get -v github.com/estesp/manifest-tool
-  - make manifest
+  - make manifest DOCKER_REPO=${DOCKER_REPO}
