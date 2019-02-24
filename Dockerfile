@@ -1,5 +1,5 @@
 
-ARG BASE_IMAGE=amd64/node
+ARG ARCH=amd64
 
 FROM alpine as qemu
 
@@ -13,7 +13,7 @@ RUN curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v
 
 # ----------------------------------------------------------------------------
 
-FROM ${BASE_IMAGE}
+FROM ${ARCH}/node:11
 
 COPY --from=qemu qemu-arm-static qemu-aarch64-static /usr/bin/
 
