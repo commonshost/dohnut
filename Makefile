@@ -19,7 +19,7 @@ arm_ARCH := arm32v7
 arm64_ARCH := arm64v8
 ARCH := ${${GOARCH}_ARCH}
 
-.DEFAULT_GOAL := help
+.DEFAULT_GOAL := build
 
 .EXPORT_ALL_VARIABLES:
 
@@ -75,10 +75,10 @@ qemu-user-static:
 .PHONY: build
 build: qemu-user-static
 	@docker build ${BUILD_OPTIONS} \
-		--build-arg ARCH \
-		--build-arg BUILD_VERSION \
-		--build-arg BUILD_DATE \
-		--build-arg VCS_REF \
+		--build-arg ARCH=${ARCH} \
+		--build-arg BUILD_VERSION=${BUILD_VERSION} \
+		--build-arg BUILD_DATE=${BUILD_DATE} \
+		--build-arg VCS_REF=${VCS_REF} \
 		--tag ${DOCKER_REPO}:${DOCKER_TAG} .
 
 ## Test an image by running it locally and requesting DNSSEC lookups
