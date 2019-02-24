@@ -12,22 +12,22 @@ branches:
     - /^v\d+\.\d+\.\d+.*$/
 
 env:
-  - GOARCH=amd64
-  - GOARCH=arm
-  - GOARCH=arm64
+  - ARCH=amd64
+  - ARCH=arm
+  - ARCH=arm64
 
 before_script:
   - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 script:
-  - make build GOARCH=${GOARCH} DOCKER_REPO=${DOCKER_REPO}
-  - make test GOARCH=${GOARCH} DOCKER_REPO=${DOCKER_REPO}
+  - make build ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
+  - make test ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
 
 after_success:
   # uncomment the following line to deploy only when a new git tag is pushed
   # otherwise it will deploy on every push
   # - test ${TRAVIS_TAG} =~ /^v\d+\.\d+\.\d+.*$/ || exit 0
   - echo ${DOCKER_PASSWORD} | docker login -u "${DOCKER_USERNAME}" --password-stdin
-  - make push GOARCH=${GOARCH} DOCKER_REPO=${DOCKER_REPO}
+  - make push ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
   - go get -v github.com/estesp/manifest-tool
   - make manifest
