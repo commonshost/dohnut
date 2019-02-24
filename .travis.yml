@@ -1,3 +1,8 @@
+# the following values must be set in travis-ci repo settings
+# - DOCKER_REPO
+# - DOCKER_USERNAME
+# - DOCKER_PASSWORD
+
 services: docker
 language: go
 
