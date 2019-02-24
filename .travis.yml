@@ -1,0 +1,26 @@
+services: docker
+language: go
+
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+\.\d+.*$/
+
+env:
+  - ARCH=amd64
+  - ARCH=arm
+  - ARCH=arm64
+
+before_script:
+  - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+
+script:
+  - make build ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
+  - make test ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
+
+after_success:
+  # - if [ -z "${TRAVIS_TAG}" ]; then exit 0; fi
+  - echo ${DOCKER_PASSWORD} | docker login -u "${DOCKER_USERNAME}" --password-stdin
+  - make push ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
+  - go get -v github.com/estesp/manifest-tool
+  - make manifest
