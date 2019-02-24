@@ -24,7 +24,9 @@ script:
   - make test ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
 
 after_success:
-  # - if [ -z "${TRAVIS_TAG}" ]; then exit 0; fi
+  # uncomment the following line to deploy only when a new git tag is pushed
+  # otherwise it will deploy on every push
+  # - test ${TRAVIS_TAG} =~ /^v\d+\.\d+\.\d+.*$/ || exit 0
   - echo ${DOCKER_PASSWORD} | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - make push ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
   - go get -v github.com/estesp/manifest-tool

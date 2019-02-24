@@ -45,7 +45,7 @@ ARG VCS_REF
 
 LABEL maintainer="kylemharding@gmail.com"
 LABEL org.label-schema.schema-version="1.0"
-LABEL org.label-schema.name="klutchell/dohnut"
+LABEL org.label-schema.name="commonshost/dohnut"
 LABEL org.label-schema.description="Dohnut is a DNS to DNS-over-HTTPS (DoH) proxy server"
 LABEL org.label-schema.url="https://github.com/commonshost/dohnut"
 LABEL org.label-schema.vcs-url="https://github.com/klutchell/dohnut"

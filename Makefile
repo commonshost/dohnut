@@ -1,7 +1,7 @@
 # override these values at runtime as desired
 # eg. make build ARCH=armhf BUILD_OPTIONS=--no-cache
 ARCH := amd64
-DOCKER_REPO := klutchell/dohnut
+DOCKER_REPO := commonshost/dognut
 BUILD_OPTIONS +=
 
 # these values are used for container labels at build time
