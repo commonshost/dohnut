@@ -28,7 +28,6 @@ ARCH := ${${GOARCH}_ARCH}
 ## Display this help message
 .PHONY: help
 help:
-	# thanks to https://gist.github.com/prwhite/8168133#gistcomment-2749866
 	@awk '{ \
 			if ($$0 ~ /^.PHONY: [a-zA-Z\-\_0-9]+$$/) { \
 				helpCommand = substr($$0, index($$0, ":") + 2); \
@@ -74,7 +73,7 @@ qemu-user-static:
 ##    DOCKER_REPO        eg. myrepo/myapp
 ##
 .PHONY: build
-build: qemu-user-static ## 
+build: qemu-user-static
 	@docker build ${BUILD_OPTIONS} \
 		--build-arg ARCH \
 		--build-arg BUILD_VERSION \
@@ -114,7 +113,7 @@ push:
 ##    DOCKER_REPO        eg. myrepo/myapp
 ##
 .PHONY: manifest
-manifest: ## Create a multi-arch manifest
+manifest:
 	@manifest-tool push from-args \
 		--platforms linux/amd64,linux/arm,linux/arm64 \
 		--template ${DOCKER_REPO}:${VCS_TAG}-ARCH \
