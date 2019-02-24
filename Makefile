@@ -28,6 +28,7 @@ ARCH := ${${GOARCH}_ARCH}
 ## Display this help message
 .PHONY: help
 help:
+	# thanks to https://gist.github.com/prwhite/8168133#gistcomment-2749866
 	@awk '{ \
 			if ($$0 ~ /^.PHONY: [a-zA-Z\-\_0-9]+$$/) { \
 				helpCommand = substr($$0, index($$0, ":") + 2); \
