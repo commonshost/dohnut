@@ -54,8 +54,4 @@ LABEL org.label-schema.build-date="${BUILD_DATE}"
 LABEL org.label-schema.version="${BUILD_VERSION}"
 LABEL org.label-schema.vcs-ref="${VCS_REF}"
 
-COPY healthcheck.sh /
-HEALTHCHECK --interval=5s --timeout=5s --start-period=5s \
-	CMD [ "/bin/sh", "-xe", "/healthcheck.sh" ]
-
 ENTRYPOINT [ "dohnut" ]

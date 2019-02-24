@@ -23,6 +23,8 @@ BASE_IMAGE = ${${ARCH}_BASE_IMAGE}
 
 .EXPORT_ALL_VARIABLES:
 
+.ONESHELL:
+
 .PHONY: qemu-user-static
 qemu-user-static:
 	@docker run --rm --privileged multiarch/qemu-user-static:register --reset
@@ -38,8 +40,11 @@ build: qemu-user-static
 
 .PHONY: test
 test: qemu-user-static
-	@docker run --rm --entrypoint "/bin/sh" \
-		${DOCKER_REPO}:${DOCKER_TAG} -xec "dohnut --listen 127.0.0.1:53 --doh commonshost & sleep 5 && /healthcheck.sh"
+	$(eval CONTAINER=$(shell docker run -d -p 5300:5300/tcp -p 5300:5300/udp ${DOCKER_REPO}:${DOCKER_TAG} --listen 0.0.0.0:5300 --doh commonshost))
+	dig sigok.verteiltesysteme.net @127.0.0.1 -p 5300 | grep NOERROR || exit 1
+	dig sigfail.verteiltesysteme.net @127.0.0.1 -p 5300 | grep SERVFAIL || exit 1
+	@docker stop ${CONTAINER}
+	@docker rm ${CONTAINER}
 
 .PHONY: push
 push:
