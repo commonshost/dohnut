@@ -1,6 +1,4 @@
-
 ARG ARCH=amd64
-
 FROM alpine as qemu
 
 RUN apk add --no-cache curl
@@ -13,8 +11,8 @@ RUN curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v
 
 # ----------------------------------------------------------------------------
 
-FROM ${ARCH}/node:11
-
+ARG ARCH
+FROM $ARCH/node
 COPY --from=qemu qemu-arm-static qemu-aarch64-static /usr/bin/
 
 ENV DEBIAN_FRONTEND noninteractive

@@ -14,10 +14,10 @@ DOCKER_TAG := ${VCS_TAG}-${GOARCH}
 # GOARCH to ARCH mapping (don't change these)
 # supported GOARCH values can be found here: https://golang.org/doc/install/source#environment
 # supported ARCH values can be found here: https://github.com/docker-library/official-images#architectures-other-than-amd64
-amd64_ARCH := amd64
-arm_ARCH := arm32v7
-arm64_ARCH := arm64v8
-ARCH := ${${GOARCH}_ARCH}
+amd64_ARCH = amd64
+arm_ARCH = arm32v7
+arm64_ARCH = arm64v8
+ARCH = ${${GOARCH}_ARCH}
 
 .DEFAULT_GOAL := build
 
@@ -75,10 +75,10 @@ qemu-user-static:
 .PHONY: build
 build: qemu-user-static
 	@docker build ${BUILD_OPTIONS} \
-		--build-arg ARCH=${ARCH} \
-		--build-arg BUILD_VERSION=${BUILD_VERSION} \
-		--build-arg BUILD_DATE=${BUILD_DATE} \
-		--build-arg VCS_REF=${VCS_REF} \
+		--build-arg ARCH \
+		--build-arg BUILD_VERSION \
+		--build-arg BUILD_DATE \
+		--build-arg VCS_REF \
 		--tag ${DOCKER_REPO}:${DOCKER_TAG} .
 
 ## Test an image by running it locally and requesting DNSSEC lookups
