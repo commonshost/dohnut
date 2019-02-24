@@ -1,5 +1,5 @@
-# the following values must be set in travis-ci repo settings
-# - DOCKER_REPO
+# the following values must be set in https://travis-ci.com/<github-repo>/settings
+# - DOCKER_REPO (eg. myrepo/myapp)
 # - DOCKER_USERNAME
 # - DOCKER_PASSWORD
 
