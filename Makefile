@@ -90,7 +90,7 @@ qemu-user-static:
 .PHONY: build
 build: qemu-user-static
 	@docker build ${BUILD_OPTIONS} \
-		--build-arg FROM_ARCH \
+		--build-arg ARCH \
 		--build-arg BUILD_VERSION \
 		--build-arg BUILD_DATE \
 		--build-arg VCS_REF \
