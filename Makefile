@@ -1,23 +1,38 @@
 # override these values at runtime as desired
-# eg. make build ARCH=arm BUILD_OPTIONS=--no-cache
+# eg. make build ARCH=arm32v6 BUILD_OPTIONS=--no-cache
 ARCH := amd64
 DOCKER_REPO := commonshost/dohnut
 BUILD_OPTIONS +=
+
+# ARCH to GOARCH mapping (don't change these)
+# supported ARCH values: https://github.com/docker-library/official-images#architectures-other-than-amd64
+# supported GOARCH values: https://golang.org/doc/install/source#environment
+ifeq "${ARCH}" "amd64"
+GOARCH := amd64
+GOARM :=
+endif
+
+ifeq "${ARCH}" "arm32v6"
+GOARCH := arm
+GOARM := 6
+endif
+
+ifeq "${ARCH}" "arm32v7"
+GOARCH := arm
+GOARM := 7
+endif
+
+ifeq "${ARCH}" "arm64v8"
+GOARCH := arm64
+GOARM :=
+endif
 
 # these values are used for container labels at build time
 BUILD_DATE := $(strip $(shell docker run --rm busybox date -u +'%Y-%m-%dT%H:%M:%SZ'))
 BUILD_VERSION := $(strip $(shell git describe --tags --always --dirty))
 VCS_REF := $(strip $(shell git rev-parse --short HEAD))
 VCS_TAG := $(strip $(shell git describe --abbrev=0 --tags))
-DOCKER_TAG := ${VCS_TAG}-${ARCH}
-
-# ARCH to FROM_ARCH mapping (don't change these)
-# supported ARCH values: https://golang.org/doc/install/source#environment
-# supported FROM_ARCH values: https://github.com/docker-library/official-images#architectures-other-than-amd64
-amd64_FROM_ARCH = amd64
-arm_FROM_ARCH = arm32v7
-arm64_FROM_ARCH = arm64v8
-FROM_ARCH = ${${ARCH}_FROM_ARCH}
+DOCKER_TAG := ${VCS_TAG}-${GOARCH}
 
 .DEFAULT_GOAL := build
 
@@ -68,7 +83,7 @@ qemu-user-static:
 ## Usage:
 ##    make build [PARAM1=] [PARAM2=] [PARAM3=]
 ## Optional parameters:
-##    ARCH               eg. amd64 or arm or arm64
+##    ARCH               eg. amd64 or arm32v7 or arm64v8
 ##    BUILD_OPTIONS      eg. --no-cache
 ##    DOCKER_REPO        eg. myrepo/myapp
 ##
@@ -85,7 +100,7 @@ build: qemu-user-static
 ## Usage:
 ##    make test [PARAM1=] [PARAM2=] [PARAM3=]
 ## Optional parameters:
-##    ARCH               eg. amd64 or arm or arm64
+##    ARCH               eg. amd64 or arm32v7 or arm64v8
 ##    DOCKER_REPO        eg. myrepo/myapp
 ##
 .PHONY: test
@@ -99,7 +114,7 @@ test: qemu-user-static
 ## Usage:
 ##    make push [PARAM1=] [PARAM2=] [PARAM3=]
 ## Optional parameters:
-##    ARCH               eg. amd64 or arm or arm64
+##    ARCH               eg. amd64 or arm32v7 or arm64v8
 ##    DOCKER_REPO        eg. myrepo/myapp
 ##
 .PHONY: push
@@ -129,7 +144,7 @@ manifest:
 ## Usage:
 ##    make release [PARAM1=] [PARAM2=] [PARAM3=]
 ## Optional parameters:
-##    ARCH               eg. amd64 or arm or arm64
+##    ARCH               eg. amd64 or arm32v7 or arm64v8
 ##    BUILD_OPTIONS      eg. --no-cache
 ##    DOCKER_REPO        eg. myrepo/myapp
 ##
