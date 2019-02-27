@@ -18,6 +18,7 @@ RUN for i in ${QEMU_ARCHS}; \
 
 FROM ${ARCH}/node:11-alpine
 
+# install qemu binaries used for cross-compiling
 COPY --from=qemu /usr/bin/qemu-* /usr/bin/
 
 RUN apk add --no-cache \
@@ -45,6 +46,9 @@ USER root
 
 # create link in path
 RUN ln -s /app/source/bin.js /usr/local/bin/dohnut
+
+# remove qemu binaries used for cross-compiling
+RUN rm /usr/bin/qemu-*
 
 ARG BUILD_DATE
 ARG BUILD_VERSION

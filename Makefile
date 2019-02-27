@@ -72,15 +72,40 @@ help:
 qemu-user-static:
 	@docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
+qemu-arm-static:
+	wget -q https://github.com/multiarch/qemu-user-static/releases/download/v3.1.0-2/qemu-arm-static \
+		&& chmod +x qemu-arm-static
+
+qemu-aarch64-static:
+	wget -q https://github.com/multiarch/qemu-user-static/releases/download/v3.1.0-2/qemu-aarch64-static \
+		&& chmod +x qemu-aarch64-static
+
+## -- Parameters --
+
+## Select a target architecture (optional): amd64|arm32v6|arm64v8
+## eg. make ARCH=arm32v6
+##
+.PHONY: ARCH
+
+## Provide additional docker build flags (optional)
+## eg. make BUILD_OPTIONS=--no-cache
+##
+.PHONY: BUILD_OPTIONS
+
+## Override default docker repo (optional)
+## eg. make DOCKER_REPO=myrepo/myapp
+.PHONY: DOCKER_REPO
+
 ## -- Docker --
 
+## Build, test, and push the image in one step
+## eg. make release [ARCH=] [BUILD_OPTIONS=] [DOCKER_REPO=]
+##
+.PHONY: release
+release: build test push
+
 ## Build an image for the selected platform
-## Usage:
-##    make build [PARAM1=] [PARAM2=] [PARAM3=]
-## Optional parameters:
-##    ARCH               eg. amd64 or arm32v6 or arm64v8
-##    BUILD_OPTIONS      eg. --no-cache
-##    DOCKER_REPO        eg. myrepo/myapp
+## eg. make build [ARCH=] [BUILD_OPTIONS=] [DOCKER_REPO=]
 ##
 .PHONY: build
 build: qemu-user-static
@@ -91,36 +116,28 @@ build: qemu-user-static
 		--build-arg VCS_REF \
 		--tag ${DOCKER_REPO}:${DOCKER_TAG} .
 
-## Test an image by running it locally and requesting DNSSEC lookups
-## Usage:
-##    make test [PARAM1=] [PARAM2=] [PARAM3=]
-## Optional parameters:
-##    ARCH               eg. amd64 or arm32v6 or arm64v8
-##    DOCKER_REPO        eg. myrepo/myapp
+## Test an image by running it locally and requesting DNS lookups
+## eg. make test [ARCH=] [DOCKER_REPO=]
 ##
 .PHONY: test
-test: qemu-user-static
-	$(eval CONTAINER_ID=$(shell docker run --rm -d -p 53:53/tcp -p 53:53/udp ${DOCKER_REPO}:${DOCKER_TAG} --listen 0.0.0.0:53 --doh commonshost))
+test: qemu-user-static qemu-arm-static qemu-aarch64-static
+	$(eval CONTAINER_ID=$(shell docker run --rm -d \
+		-v "$(CURDIR)/qemu-arm-static:/usr/bin/qemu-arm-static" \
+		-v "$(CURDIR)/qemu-aarch64-static:/usr/bin/qemu-aarch64-static" \
+		-p 53:53/tcp -p 53:53/udp ${DOCKER_REPO}:${DOCKER_TAG} --listen 0.0.0.0:53 --doh commonshost))
 	dig sigok.verteiltesysteme.net @127.0.0.1 | grep NOERROR || (docker stop ${CONTAINER_ID}; exit 1)
 	dig sigfail.verteiltesysteme.net @127.0.0.1 | grep SERVFAIL || (docker stop ${CONTAINER_ID}; exit 1)
 	@docker stop ${CONTAINER_ID}
 
-## Push an image to the selected docker repo
-## Usage:
-##    make push [PARAM1=] [PARAM2=] [PARAM3=]
-## Optional parameters:
-##    ARCH               eg. amd64 or arm32v6 or arm64v8
-##    DOCKER_REPO        eg. myrepo/myapp
+## Push an image to the configured docker repo
+## eg. make push [ARCH=] [DOCKER_REPO=]
 ##
 .PHONY: push
 push:
 	@docker push ${DOCKER_REPO}:${DOCKER_TAG}
 
 ## Create and push a multi-arch manifest list
-## Usage:
-##    make manifest [PARAM1=] [PARAM2=] [PARAM3=]
-## Optional parameters:
-##    DOCKER_REPO        eg. myrepo/myapp
+## eg. make manifest [DOCKER_REPO=]
 ##
 .PHONY: manifest
 manifest:
@@ -134,14 +151,3 @@ manifest:
 		--template ${DOCKER_REPO}:${VCS_TAG}-ARCH \
 		--target ${DOCKER_REPO}:latest \
 		--ignore-missing
-
-## Build, test, and push the image in one step
-## Usage:
-##    make release [PARAM1=] [PARAM2=] [PARAM3=]
-## Optional parameters:
-##    ARCH               eg. amd64 or arm32v6 or arm64v8
-##    BUILD_OPTIONS      eg. --no-cache
-##    DOCKER_REPO        eg. myrepo/myapp
-##
-.PHONY: release
-release: build test push
