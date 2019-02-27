@@ -4,45 +4,52 @@ FROM alpine as qemu
 
 RUN apk add --no-cache curl
 
-RUN curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v3.1.0-2/qemu-arm-static -O \
-	&& chmod +x qemu-arm-static
+ARG QEMU_VERSION=3.1.0-2
+ARG QEMU_ARCHS="arm aarch64"
 
-RUN curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v3.1.0-2/qemu-aarch64-static -O \
-	&& chmod +x qemu-aarch64-static
+RUN for i in ${QEMU_ARCHS}; \
+	do \
+	curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/qemu-${i}-static.tar.gz \
+	| tar zxvf - -C /usr/bin; \
+	done \
+	&& chmod +x /usr/bin/qemu-*
 
 # ----------------------------------------------------------------------------
 
-FROM ${ARCH}/node:11
+FROM ${ARCH}/node:11-alpine
 
-COPY --from=qemu qemu-arm-static qemu-aarch64-static /usr/bin/
+COPY --from=qemu /usr/bin/qemu-* /usr/bin/
 
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && apt-get install -yq --no-install-recommends \
+RUN apk add --no-cache \
 	git \
 	curl \
-	libsystemd-dev \
-	build-essential \
-	libssl-dev \
 	net-tools \
-	ldnsutils \
-	&& apt-get clean \
-	&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+	drill
 
 WORKDIR /app
 
+# copy source files
 COPY package.json ./
 COPY source/ ./source
 
-RUN npm install --production
+# running as root user gets stuck @ node ./prebuilt-bindings install
+# as a workaround run as node user just for installation
+# https://github.com/nodejs/docker-node/issues/873
+RUN chown -R node:node /app
+USER node
 
+RUN npm install --production --no-optional
+
+# switch back to root
+USER root
+
+# create link in path
 RUN ln -s /app/source/bin.js /usr/local/bin/dohnut
 
 ARG BUILD_DATE
 ARG BUILD_VERSION
 ARG VCS_REF
 
-LABEL maintainer="kylemharding@gmail.com"
 LABEL org.label-schema.schema-version="1.0"
 LABEL org.label-schema.name="commonshost/dohnut"
 LABEL org.label-schema.description="Dohnut is a DNS to DNS-over-HTTPS (DoH) proxy server"

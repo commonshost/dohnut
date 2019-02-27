@@ -13,7 +13,7 @@ branches:
 
 env:
   - ARCH=amd64
-  - ARCH=arm32v7
+  - ARCH=arm32v6
   - ARCH=arm64v8
 
 before_script:
@@ -24,8 +24,9 @@ script:
   - make test ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}
 
 after_success:
-  # uncomment the following line to deploy only when a new git tag is pushed
+  # the following test will make sure we deploy only when a new git tag is pushed
   # otherwise it will deploy on every push
+  # it should only be commented out for travis-ci build hook testing
   # - test ${TRAVIS_TAG} =~ /^v\d+\.\d+\.\d+.*$/ || exit 0
   - echo ${DOCKER_PASSWORD} | docker login -u "${DOCKER_USERNAME}" --password-stdin
   - make push ARCH=${ARCH} DOCKER_REPO=${DOCKER_REPO}

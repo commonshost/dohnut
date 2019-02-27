@@ -51,7 +51,7 @@ function parseOptions ({
       ({ $1: address, $2: port } = RegExp)
       type = 'udp6'
     } else {
-      throw new Error(`Not recognised as IPv4/IPv6 address: ${listener}`)
+      throw new Error(`Not recognized as IPv4/IPv6 address: ${listener}`)
     }
     configuration.dns.push({ address, type, port: Number(port) || 53 })
   }
