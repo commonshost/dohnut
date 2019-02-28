@@ -1,24 +1,67 @@
-FROM node:latest
+ARG ARCH=amd64
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV INITRD No
-ENV NODE_ENV production
+FROM alpine as qemu
 
-RUN apt-get update
+RUN apk add --no-cache curl
 
-RUN apt-get install \
-  git \
-  curl \
-  libsystemd-dev \
-  build-essential \
-  libssl-dev \
-  net-tools
+ARG QEMU_VERSION=3.1.0-2
+ARG QEMU_ARCHS="arm aarch64"
 
-COPY package.json /root/dohnut/
-COPY source/ /root/dohnut/source/
+RUN for i in ${QEMU_ARCHS}; \
+	do \
+	curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/qemu-${i}-static.tar.gz \
+	| tar zxvf - -C /usr/bin; \
+	done \
+	&& chmod +x /usr/bin/qemu-*
 
-RUN cd /root/dohnut && npm install
+# ----------------------------------------------------------------------------
 
-RUN ln -s /root/dohnut/source/bin.js /usr/local/bin/dohnut
+FROM ${ARCH}/node:11-alpine
 
-ENTRYPOINT ["dohnut"]
+# install qemu binaries used for cross-compiling
+COPY --from=qemu /usr/bin/qemu-* /usr/bin/
+
+RUN apk add --no-cache \
+	git \
+	curl \
+	net-tools \
+	drill
+
+WORKDIR /app
+
+# copy source files
+COPY package.json ./
+COPY source/ ./source
+
+# running as root user gets stuck @ node ./prebuilt-bindings install
+# as a workaround run as node user just for installation
+# https://github.com/nodejs/docker-node/issues/873
+RUN chown -R node:node /app
+USER node
+
+RUN npm install --production --no-optional
+
+# switch back to root
+USER root
+
+# create link in path
+RUN ln -s /app/source/bin.js /usr/local/bin/dohnut
+
+# remove qemu binaries used for cross-compiling
+RUN rm /usr/bin/qemu-*
+
+ARG BUILD_DATE
+ARG BUILD_VERSION
+ARG VCS_REF
+
+LABEL org.label-schema.schema-version="1.0"
+LABEL org.label-schema.name="commonshost/dohnut"
+LABEL org.label-schema.description="Dohnut is a DNS to DNS-over-HTTPS (DoH) proxy server"
+LABEL org.label-schema.url="https://help.commons.host/dohnut/"
+LABEL org.label-schema.vcs-url="https://github.com/commonshost/dohnut"
+LABEL org.label-schema.docker.cmd="docker run -p 53:53/tcp -p 53:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost"
+LABEL org.label-schema.build-date="${BUILD_DATE}"
+LABEL org.label-schema.version="${BUILD_VERSION}"
+LABEL org.label-schema.vcs-ref="${VCS_REF}"
+
+ENTRYPOINT [ "dohnut" ]

@@ -3,3 +3,4 @@ Dockerfile
 test/
 docs/
 *.png
+qemu-*
