@@ -15,6 +15,12 @@ $ npm install --global dohnut
 $ dohnut [OPTIONS]
 ```
 
+Docker's [`docker` CLI tool](https://docs.docker.com/engine/reference/run/) can automatically install, cache, and run Dohnut on the command line. See [Dohnut with Docker](../docker) for detailed information.
+
+```shell
+$ docker run [DOCKER_OPTIONS] commonshost/dohnut [DOHNUT_OPTIONS]
+```
+
 ## Options
 
 ### `--doh`, `--upstream`, `--proxy`
