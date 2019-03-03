@@ -4,15 +4,19 @@ Use Docker to run Dohnut in a container. Multi-arch Docker container images are 
 
 Docker image: [`commonshost/dohnut`](https://hub.docker.com/r/commonshost/dohnut)
 
-    $ docker run [DOCKER_OPTIONS] commonshost/dohnut [DOHNUT_OPTIONS]
+```shell
+$ docker run [DOCKER_OPTIONS] commonshost/dohnut [DOHNUT_OPTIONS]
+```
 
 Any options before the image name `commonshost/dohnut` are for Docker. Any options after the image name are for Dohnut.
 
 ## Example
 
-Proxy to Commons Host DoH and expose the DNS service on port `53` (UDP) on all network interfaces.
+Run forever as a background service, listen on port `53/udp` on all network interfaces, and DNS proxy queries to Commons Host DoH.
 
-    $ docker run -p 0.0.0.0:53:53/udp commonshost/dohnut --listen 0.0.0.0 --doh commonshost
+```shell
+$ docker run --detach --restart unless-stopped --net=host commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost
+```
 
 Test the service by performing a DNS query on the Docker host system.
 
@@ -56,13 +60,23 @@ The `--restart unless-stopped` Docker option automatically runs Dohnut when Dock
 
 Dohnut run inside a container so Docker needs to map its listening ports to the host's network.
 
+The simplest method is to expose the host network directly to the container.
+
+```shell
+$ docker run --detach --restart unless-stopped --net=host commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost
+```
+
 Service using IPv4:
 
-    $ docker run --detach --restart unless-stopped --publish 0.0.0.0:53:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost
+```shell
+$ docker run --detach --restart unless-stopped --publish 0.0.0.0:53:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost
+```
 
 Service using IPv6:
 
-    $ docker run --detach --restart unless-stopped --publish [::]:53:53/udp commonshost/dohnut --listen [::]:53 --doh commonshost
+```shell
+$ docker run --detach --restart unless-stopped --publish [::]:53:53/udp commonshost/dohnut --listen [::]:53 --doh commonshost
+```
 
 Please ensure that Dohnut is only exposed to a private LAN or localhost. Running a public, open DNS resolver exposed to public Internet traffic is strongly discouraged. Plaintext DNS/UDP is a potential source of [traffic amplification in DDoS attacks](https://en.wikipedia.org/wiki/Denial-of-service_attack#Amplification).
 
@@ -70,4 +84,6 @@ Expose Dohnut on `127.0.0.1` or `0.0.0.0` for localhost-only or all network inte
 
 DNS uses port `53` by default but one use case of re-mapping to another port is when Dohnut is used as a local proxy for another resolver like `resolved` or [Pi-hole](../pihole). For example to run Dohnut on port `53000` and only be accessible from the local host:
 
-    $ docker run --detach --restart unless-stopped --publish 127.0.0.1:53000:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost
+```shell
+$ docker run --detach --restart unless-stopped --publish 127.0.0.1:53000:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost
+```
