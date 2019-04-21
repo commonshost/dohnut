@@ -5,7 +5,7 @@ const EventEmitter = require('events')
 const { Worker } = require('worker_threads')
 const { getPopularDomains } = require('./getPopularDomains')
 
-const PING_MIN_INTERVAL = 10000
+const PING_MIN_INTERVAL = 600000
 
 function startUdpSocket (type, address, port, fd) {
   return new Promise((resolve, reject) => {
