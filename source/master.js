@@ -127,7 +127,6 @@ class Dohnut {
         }
       })
       connection.on('ping', () => {
-        console.log(`Ping RTT: ${connection.rtt} ms @ ${connection.uri}`)
         let fastest = this.fastestConnection
         for (const connection of this.doh) {
           if (connection.rtt !== undefined) {
