@@ -215,9 +215,18 @@ parentPort.on('message', (value) => {
     if (value.bootstrap.length > 0) {
       options.lookup = lookupCustomDnsServers(value.bootstrap)
     }
+    if (value.tlsSession) {
+      options.session = value.tlsSession
+    }
     session = connect(value.uri, options)
+    session.socket.on('session', (tlsSession) => {
+      parentPort.postMessage({ tlsSession })
+    })
     session.on('connect', () => {
-      parentPort.postMessage({ state: 'connected' })
+      parentPort.postMessage({
+        state: 'connected',
+        isSessionReused: session.socket.isSessionReused()
+      })
     })
     session.on('close', () => {
       parentPort.postMessage({ state: 'disconnected' })
