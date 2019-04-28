@@ -5,7 +5,7 @@ const EventEmitter = require('events')
 const { Worker } = require('worker_threads')
 const { getPopularDomains } = require('./getPopularDomains')
 
-const PING_MIN_INTERVAL = 10000
+const PING_MIN_INTERVAL = 600000
 
 function startUdpSocket (type, address, port, fd) {
   return new Promise((resolve, reject) => {
@@ -127,7 +127,6 @@ class Dohnut {
         }
       })
       connection.on('ping', () => {
-        console.log(`Ping RTT: ${connection.rtt} ms @ ${connection.uri}`)
         let fastest = this.fastestConnection
         for (const connection of this.doh) {
           if (connection.rtt !== undefined) {
@@ -239,6 +238,7 @@ class Connection extends EventEmitter {
     this.pinged = false
     this.rtt = undefined
     this.options = options
+    this.tlsSession = undefined
   }
 
   send (message) {
@@ -260,7 +260,8 @@ class Connection extends EventEmitter {
         this.worker.postMessage({
           uri: this.uri,
           spoofUseragent: this.options.spoofUseragent,
-          bootstrap: this.options.bootstrap
+          bootstrap: this.options.bootstrap,
+          tlsSession: this.tlsSession
         })
         break
     }
@@ -269,10 +270,11 @@ class Connection extends EventEmitter {
   receive (value) {
     if ('state' in value) {
       const { state } = value
-      console.log(`Worker ${this.worker.threadId}:`, value.state)
       this.state = state
       switch (state) {
         case 'connected':
+          console.log(`Worker ${this.worker.threadId}: connected`,
+            `(TLS session resumed: ${value.isSessionReused})`)
           const { pending } = this
           while (pending.length > 0) {
             const message = pending.shift()
@@ -280,6 +282,7 @@ class Connection extends EventEmitter {
           }
           break
         case 'disconnected':
+          console.log(`Worker ${this.worker.threadId}: disconnected`)
           if (this.pinged === true && this.rtt === undefined) {
             this.pinged = false
           }
@@ -296,6 +299,8 @@ class Connection extends EventEmitter {
       this.emit('ping')
     } else if ('busy' in value) {
       this.send(value.busy.message)
+    } else if ('tlsSession' in value) {
+      this.tlsSession = value.tlsSession
     }
   }
 
