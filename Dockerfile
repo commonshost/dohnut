@@ -1,55 +1,44 @@
 ARG ARCH=amd64
 
-FROM alpine as qemu
+FROM alpine:3.9.2 as qemu
 
 RUN apk add --no-cache curl
 
-ARG QEMU_VERSION=3.1.0-2
-ARG QEMU_ARCHS="arm aarch64"
+ARG QEMU_VERSION=4.0.0
 
-RUN for i in ${QEMU_ARCHS}; \
-	do \
-	curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/qemu-${i}-static.tar.gz \
-	| tar zxvf - -C /usr/bin; \
-	done \
-	&& chmod +x /usr/bin/qemu-*
+# https://github.com/hadolint/hadolint/wiki/DL4006
+SHELL ["/bin/ash", "-o", "pipefail", "-c"]
+
+RUN curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/qemu-arm-static.tar.gz | tar zxvf - -C /usr/bin
+RUN curl -fsSL https://github.com/multiarch/qemu-user-static/releases/download/v${QEMU_VERSION}/qemu-aarch64-static.tar.gz | tar zxvf - -C /usr/bin
+
+RUN chmod +x /usr/bin/qemu-*
+
+# ----------------------------------------------------------------------------
+
+FROM ${ARCH}/node:11-alpine as build
+
+# copy qemu binaries used for cross-compiling
+COPY --from=qemu /usr/bin/qemu-* /usr/bin/
+
+RUN apk add --no-cache \
+	alpine-sdk \
+	curl \
+	drill \
+	git \
+	net-tools \	
+	python
+
+WORKDIR /app
+
+COPY package.json ./
+COPY source/ ./source
+
+RUN yarn install --ignore-optional --production
 
 # ----------------------------------------------------------------------------
 
 FROM ${ARCH}/node:11-alpine
-
-# install qemu binaries used for cross-compiling
-COPY --from=qemu /usr/bin/qemu-* /usr/bin/
-
-RUN apk add --no-cache \
-	git \
-	curl \
-	net-tools \
-	drill
-
-WORKDIR /app
-
-# copy source files
-COPY package.json ./
-COPY source/ ./source
-
-# running as root user gets stuck @ node ./prebuilt-bindings install
-# as a workaround run as node user just for installation
-# https://github.com/nodejs/docker-node/issues/873
-RUN chown -R node:node /app
-USER node
-
-RUN npm install --production --no-optional
-
-# switch back to root
-USER root
-
-# create link in path
-RUN ln -s /app/source/bin.js /usr/local/bin/dohnut
-RUN chmod +x /app/source/bin.js
-
-# remove qemu binaries used for cross-compiling
-RUN rm /usr/bin/qemu-*
 
 ARG BUILD_DATE
 ARG BUILD_VERSION
@@ -65,4 +54,6 @@ LABEL org.label-schema.build-date="${BUILD_DATE}"
 LABEL org.label-schema.version="${BUILD_VERSION}"
 LABEL org.label-schema.vcs-ref="${VCS_REF}"
 
-ENTRYPOINT [ "dohnut" ]
+COPY --from=build /app /app
+
+ENTRYPOINT [ "node", "/app/source/bin.js" ]
