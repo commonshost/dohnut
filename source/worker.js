@@ -219,6 +219,10 @@ parentPort.on('message', (value) => {
       options.session = value.tlsSession
     }
     session = connect(value.uri, options)
+    if (session.socket.getProtocol() === 'TLSv1.2') {
+      const tlsSession = session.socket.getSession()
+      parentPort.postMessage({ tlsSession })
+    }
     session.socket.on('session', (tlsSession) => {
       parentPort.postMessage({ tlsSession })
     })
