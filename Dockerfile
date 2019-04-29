@@ -16,7 +16,7 @@ RUN chmod +x /usr/bin/qemu-*
 
 # ----------------------------------------------------------------------------
 
-FROM ${ARCH}/node:11-alpine as build
+FROM ${ARCH}/node:12-alpine as build
 
 # copy qemu binaries used for cross-compiling
 COPY --from=qemu /usr/bin/qemu-* /usr/bin/
@@ -38,7 +38,7 @@ RUN yarn install --ignore-optional --production
 
 # ----------------------------------------------------------------------------
 
-FROM ${ARCH}/node:11-alpine
+FROM ${ARCH}/node:12-alpine
 
 ARG BUILD_DATE
 ARG BUILD_VERSION
