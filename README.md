@@ -38,7 +38,7 @@ Dohnut can be used in several ways:
 - [macOS: managed by launchd](./docs/macos)
 - [Pi-hole: upstream DNS server](./docs/pihole)
 
-This example launches Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service. See the [command line interface](./cli) reference for more options.
+This example launches Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service. See the [command line interface](./docs/cli) reference for more options.
 
 ```shell
 $ sudo npx dohnut --listen 127.0.0.1:53 --doh https://commons.host
