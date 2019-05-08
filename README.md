@@ -35,7 +35,7 @@ Dohnut can be used in several ways:
 - [Command line interface](./docs/cli)
 - [Docker: container image](./docs/docker)
 - [Linux: managed by systemd](./docs/systemd)
-- [macOS: managed by launchd](./docs/macos)
+- [macOS: managed by launchd](./docs/launchd)
 - [Pi-hole: upstream DNS server](./docs/pihole)
 
 This example launches Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service. See the [command line interface](./docs/cli) reference for more options.
