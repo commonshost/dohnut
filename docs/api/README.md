@@ -5,7 +5,7 @@ Programmatic use of Dohnut in JavaScript.
 ## Installation
 
 ```shell
-$ npm install donut
+$ npm install dohnut
 ```
 
 ## `new Dohnut(configuration)`
