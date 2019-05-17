@@ -1,5 +1,7 @@
 # Dohnut
 
+![](https://img.shields.io/badge/dynamic/json.svg?color=blue&label=Docker%20Hub&query=pull_count&suffix=%20pulls&url=https%3A%2F%2Fhub.docker.com%2Fv2%2Frepositories%2Fcommonshost%2Fdohnut%2F)
+
 Dohnut is a DNS to DNS-over-HTTPS (DoH) proxy server. Dohnut improves the performance, security, and privacy of your DNS traffic.
 
 https://help.commons.host/dohnut/
