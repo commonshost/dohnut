@@ -272,7 +272,7 @@ class Connection extends EventEmitter {
       const { state } = value
       this.state = state
       switch (state) {
-        case 'connected':
+        case 'connected': {
           console.log(`Worker ${this.worker.threadId}: connected`,
             `(TLS session resumed: ${value.isSessionReused})`)
           const { pending } = this
@@ -281,12 +281,14 @@ class Connection extends EventEmitter {
             this.send(message)
           }
           break
-        case 'disconnected':
+        }
+        case 'disconnected': {
           console.log(`Worker ${this.worker.threadId}: disconnected`)
           if (this.pinged === true && this.rtt === undefined) {
             this.pinged = false
           }
           break
+        }
       }
     } else if ('response' in value) {
       this.emit('response', value.response)

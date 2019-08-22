@@ -51,7 +51,7 @@ function unzip (archivepath, entrypath, csvpath) {
 function cleanupSync (csvpath, listpath) {
   return new Promise((resolve, reject) => {
     const lines = readFileSync(csvpath, { encoding: 'utf8' }).split('\r\n')
-    let concat = []
+    const concat = []
     for (const line of lines) {
       const [, domain] = line.split(',')
       if (domain !== undefined && domain.length > 0) {
@@ -89,7 +89,7 @@ function cleanup (csvpath, listpath) {
       input: csv,
       crlfDelay: Infinity
     })
-    let concat = []
+    const concat = []
     readlines.on('line', (line) => {
       const [, domain] = line.split(',')
       if (domain !== undefined && domain.length > 0) {

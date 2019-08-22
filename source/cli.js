@@ -58,7 +58,7 @@ function parseOptions ({
 
   switch (platform()) {
     case 'darwin':
-    case 'linux':
+    case 'linux': {
       const socketActivation = require('socket-activation')
       try {
         for (const fd of socketActivation.collect('dohnut')) {
@@ -76,6 +76,7 @@ function parseOptions ({
         }
       }
       break
+    }
   }
 
   if (configuration.doh.length === 0) {
