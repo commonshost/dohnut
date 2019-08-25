@@ -6,6 +6,22 @@ const yargs = require('yargs')
 const chalk = require('chalk')
 const { platform } = require('os')
 
+// TODO: yargs support for array type options with environment variables
+// https://github.com/yargs/yargs/issues/821
+function splitOptions (configuration) {
+  const arrays = ['doh', 'listen', 'countermeasures']
+  for (const array of arrays) {
+    const split = []
+    for (const items of configuration[array]) {
+      for (const item of items.split(' ')) {
+        split.push(item)
+      }
+    }
+    configuration[array] = split
+  }
+  return configuration
+}
+
 function parseOptions ({
   doh = [],
   listen = [],
@@ -92,6 +108,7 @@ function parseOptions ({
 
 async function main () {
   const { argv } = yargs
+    .env('DOHNUT')
     .option('doh', {
       type: 'array',
       alias: ['upstream', 'proxy'],
@@ -180,7 +197,7 @@ async function main () {
     .version()
     .help()
 
-  const configuration = parseOptions(argv)
+  const configuration = parseOptions(splitOptions(argv))
 
   if (argv.test) {
     console.log('Configuration is valid')

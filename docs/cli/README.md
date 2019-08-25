@@ -182,3 +182,16 @@ Bypass the operating system DNS settings to resolve the DoH service hostnames.
 Load options from a JSON file
 
     --config ~/dohnut-options.json
+
+## Environment Variables
+
+All command line interface options can also be specified as environment variables.
+
+Environment variable names must be uppercase and begin with the `DOHNUT_` prefix. Hyphens are replaced with `_` underscores.
+
+Environment variables with multiple values must be space-separated. In Bash the values will need to be quoted, but `.env` configuration files (e.g. Docker Compose, systemd) do not require quotes.
+
+| Example | Option | Environment Variable |
+|-|-|-|
+| Single value | `--load-balance performance` | `DOHNUT_LOAD_BALANCE=performance` |
+| Multiple values | `--bootstrap 1.1.1.1 8.8.8.8` | `DOHNUT_BOOTSTRAP="1.1.1.1 8.8.8.8"` |
