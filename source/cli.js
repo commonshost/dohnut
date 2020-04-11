@@ -9,7 +9,7 @@ const { platform } = require('os')
 // TODO: yargs support for array type options with environment variables
 // https://github.com/yargs/yargs/issues/821
 function splitOptions (configuration) {
-  const arrays = ['doh', 'listen', 'countermeasures']
+  const arrays = ['doh', 'listen', 'countermeasures', 'bootstrap']
   for (const array of arrays) {
     const split = []
     for (const items of configuration[array]) {

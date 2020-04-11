@@ -18,6 +18,23 @@ Run forever as a background service, listen on port `53/udp` on all network inte
 $ docker run --detach --restart unless-stopped --net=host commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost --bootstrap 1.1.1.1
 ```
 
+Or using docker-compose:
+```yaml
+version: "3"
+
+services:
+  dohnut:
+    container_name: dohnut
+    image: commonshost/dohnut:latest
+    environment:
+      TZ: "Europe/Brussels"
+      DOHNUT_LISTEN: 127.0.0.1:53
+      DOHNUT_BOOTSTRAP: 1.1.1.1
+      DOHNUT_DOH: commonshost cloudflare google
+      DOHNUT_COUNTERMEASURES: spoof-queries
+    network_mode: "host"
+```
+
 Test the service by performing a DNS query on the Docker host system.
 
     $ dig @localhost example.com
