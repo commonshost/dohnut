@@ -2,5 +2,3 @@
 !.travis.yml
 !.gitignore
 qemu-*
-node_modules/*
-package-lock.json
