@@ -200,6 +200,7 @@ async function main () {
     .config()
     .version()
     .help()
+    .wrap(null)
 
   const configuration = parseOptions(splitOptions(argv))
 
