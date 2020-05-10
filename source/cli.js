@@ -13,8 +13,12 @@ function splitOptions (configuration) {
   for (const array of arrays) {
     const split = []
     for (const items of configuration[array]) {
-      for (const item of items.split(' ')) {
-        split.push(item)
+      if (typeof items === 'string') {
+        for (const item of items.split(' ')) {
+          split.push(item)
+        }
+      } else {
+        split.push(items)
       }
     }
     configuration[array] = split
