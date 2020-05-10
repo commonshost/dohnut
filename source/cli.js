@@ -242,6 +242,7 @@ async function main () {
 
 main()
   .catch((error) => {
-    console.trace(chalk.red(error))
+    error.message = chalk.red(error.message)
+    console.trace(error)
     process.exit(1)
   })
