@@ -6,24 +6,16 @@ const yargs = require('yargs')
 const chalk = require('chalk')
 const { platform } = require('os')
 
-// TODO: yargs support for array type options with environment variables
-// https://github.com/yargs/yargs/issues/821
-function splitOptions (configuration) {
-  const arrays = ['doh', 'listen', 'countermeasures', 'bootstrap']
-  for (const array of arrays) {
-    const split = []
-    for (const items of configuration[array]) {
-      if (typeof items === 'string') {
-        for (const item of items.split(' ')) {
-          split.push(item)
-        }
-      } else {
-        split.push(items)
-      }
+function splitStrings (array) {
+  const values = []
+  for (const value of array) {
+    if (typeof value === 'string') {
+      values.push(...value.split(/\s+/))
+    } else {
+      values.push(value)
     }
-    configuration[array] = split
   }
-  return configuration
+  return values
 }
 
 function parseOptions ({
@@ -114,12 +106,14 @@ async function main () {
   const { argv } = yargs
     .env('DOHNUT')
     .option('doh', {
+      coerce: splitStrings,
       type: 'array',
       alias: ['upstream', 'proxy'],
       describe: 'URI Templates or shortnames of upstream DNS over HTTPS resolvers',
       default: []
     })
     .option('listen', {
+      coerce: splitStrings,
       type: 'array',
       alias: ['local', 'l'],
       describe: 'IPs and ports for the local DNS server',
@@ -139,12 +133,14 @@ async function main () {
       default: 'performance'
     })
     .option('countermeasures', {
+      coerce: splitStrings,
       type: 'array',
       describe: 'Special tactics to protect your privacy',
       choices: ['spoof-queries', 'spoof-useragent'],
       default: []
     })
     .option('bootstrap', {
+      coerce: splitStrings,
       type: 'array',
       describe: 'IP addresses of DNS servers used to resolve the DoH URI hostname',
       default: []
@@ -202,7 +198,7 @@ async function main () {
     .help()
     .wrap(null)
 
-  const configuration = parseOptions(splitOptions(argv))
+  const configuration = parseOptions(argv)
 
   if (argv.test) {
     console.log('Configuration is valid')
