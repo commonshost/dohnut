@@ -1,6 +1,6 @@
 {
   "name": "dohnut",
-  "version": "4.7.0",
+  "version": "4.8.0",
   "description": "DNS to DNS-over-HTTPS (DoH) proxy server",
   "license": "ISC",
   "repository": "github:commonshost/dohnut",
