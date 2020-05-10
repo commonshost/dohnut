@@ -27,10 +27,10 @@
     "blue-tape": "^1.0.0",
     "snazzy": "^8.0.0",
     "standard": "^14.0.0",
-    "tape": "^4.11.0"
+    "tape": "^5.0.0"
   },
   "dependencies": {
-    "@commonshost/resolvers": "^1.3.0",
+    "@commonshost/resolvers": "^1.4.0",
     "base64url": "^3.0.1",
     "chalk": "^2.4.2",
     "dns-packet": "^5.2.1",
