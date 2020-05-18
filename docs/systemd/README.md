@@ -125,6 +125,25 @@ Follow the Dohnut logs to keep an eye on things.
 
 But wait, there's more...
 
+## IPv6
+
+DNS queries can be handled over IPv6 by making small edits to the configuration above.
+
+Change `/etc/dohnut/options.json` to:
+
+    "datagram-protocol": "udp6"
+
+Change `/etc/systemd/system/dohnut.socket` to:
+
+    ListenDatagram=[::1]:53000
+
+Then apply the configuration and test it using `dig` over IPv6:
+
+    $ sudo systemctl daemon-reload
+    $ sudo systemctl stop dohnut.service
+    $ sudo systemctl restart dohnut.socket
+    $ dig @::1 -p 53000 example.com
+
 ## Updates
 
 Regularly update Node.js and Dohnut to the latest version for better performance, features, and security.
