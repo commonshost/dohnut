@@ -235,17 +235,16 @@ async function main () {
   try {
     notify = require('sd-notify')
   } catch (error) {
-    if (require('os').platform() === 'linux') {
-      console.log('systemd notifications and heartbeat are unavailable')
-    }
   }
   if (notify) {
     const watchdogInterval = notify.watchdogInterval()
     if (watchdogInterval > 0) {
       const interval = Math.max(500, Math.floor(watchdogInterval / 2))
       notify.startWatchdogMode(interval)
+      console.log('Started systemd heartbeat')
     }
     notify.ready()
+    console.log('Notified systemd ready')
   }
 }
 
