@@ -6,3 +6,5 @@ docs/
 qemu-*
 etc-*
 top-1m*
+Makefile
+*.yml
