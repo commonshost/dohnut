@@ -19,6 +19,7 @@ function splitStrings (array) {
 }
 
 function parseOptions ({
+  cacheDirectory,
   doh = [],
   listen = [],
   loadBalance,
@@ -27,6 +28,7 @@ function parseOptions ({
   datagramProtocol
 }) {
   const configuration = {
+    cacheDirectory,
     dns: [],
     doh: [],
     loadBalance,
@@ -91,6 +93,10 @@ function parseOptions ({
     }
   }
 
+  if (!configuration.cacheDirectory) {
+    configuration.cacheDirectory = process.cwd()
+  }
+
   if (configuration.doh.length === 0) {
     throw new Error('No upstream DoH services specified.')
   }
@@ -151,6 +157,11 @@ async function main () {
       choices: ['udp4', 'udp6'],
       default: 'udp6'
     })
+    .option('cacheDirectory', {
+      type: 'string',
+      describe: 'Directory path to store cached data. Defaults to current working directory.',
+      default: ''
+    })
     .example('')
     .example('--listen 127.0.0.1 ::1 --doh commonshost')
     .example('Only allow localhost connections. Proxy to the Commons Host DoH service.')
@@ -182,8 +193,9 @@ async function main () {
     .example('--load-balance performance --doh quad9 cloudflare commonshost')
     .example('Send queries to the fastest DoH service by measuring ping round-trip-times.')
     .example('')
-    .example('--countermeasures spoof-queries')
+    .example('--countermeasures spoof-queries --cache-directory /etc/dohnut')
     .example('Randomly send fake DNS queries as disinformation to deter tracking by resolvers.')
+    .example('The domains are saved in the cache directory for reuse on restart.')
     .example('')
     .example('--countermeasures spoof-useragent')
     .example('Mimic popular web browsers by including a random User-Agent header with each request. Default is no User-Agent header.')

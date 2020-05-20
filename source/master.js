@@ -169,7 +169,9 @@ class Dohnut {
     }, 1000)
 
     if (this.configuration.countermeasures.includes('spoof-queries')) {
-      this.popularDomains = await getPopularDomains()
+      this.popularDomains = await getPopularDomains({
+        cacheDirectory: this.configuration.cacheDirectory
+      })
       const count = this.popularDomains.length.toLocaleString()
       console.log(`Loaded ${count} popular domains`)
     }

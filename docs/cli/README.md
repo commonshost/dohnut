@@ -95,6 +95,14 @@ Sets the protocol to use for local listening UDP sockets when the IP address is 
 
 Set to `udp4` to use IPv4. Set to `udp6` to use IPv6.
 
+### `--cache-directory`
+
+Default: *Current working directory*
+
+Specifies the path to a directory where data is saved. Speeds up process restarts.
+
+Only used by the `spoof-queries` feature. By saving a local copy of the popular domain names list, this avoids repeated download and processing.
+
 ### `--config`
 
 Path to JSON config file
