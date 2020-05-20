@@ -1,4 +1,6 @@
-# Docker Compose: Dohnut with Pi-hole
+# Dohnut and Pi-hole with Docker Compose
+
+## Usage
 
 Use [Docker Compose](https://docs.docker.com/compose/) to run Dohnut and [Pi-hole](https://pi-hole.net) side-by-side on the same host. Dohnut encrypts Pi-hole's upstream DNS queries, adds DNS countermeasures, and supports load balancing across multiple DoH providers for better privacy and/or performance.
 
@@ -17,6 +19,8 @@ To find the IP address, run:
 Save the edited YAML file and run both Dohnut and Pi-hole as background services:
 
     $ docker-compose up --detach
+
+## Template
 
 `./docker-compose.yml`
 
@@ -63,7 +67,7 @@ services:
     - "443:443/tcp"
 ```
 
-See also:
+## See Also
 
 - [Docker Compose `up` command reference](https://docs.docker.com/compose/reference/up/)
 - [Docker Pi-hole documentation](https://github.com/pi-hole/docker-pi-hole)

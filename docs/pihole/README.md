@@ -4,6 +4,8 @@
 
 Dohnut works with Pi-hole as a local upstream DNS server. Dohnut encrypts outbound DNS queries and can load-balance between multiple DoH providers for performance and privacy benefits. Additional countermeasures supported by Dohnut can be enabled to deter tracking even by DoH providers.
 
+Tip: See the [Dohnut with Docker Compose](../docker-compose-pihole) guide for an easy way to run Pi-hole and Dohnut together.
+
 ## Deploy Dohnut
 
 Dohnut can run on the same device as Pi-hole. A popular approach is to [set up Raspbian Linux on a Raspberry Pi](../raspbian).

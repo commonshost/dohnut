@@ -39,6 +39,7 @@ Dohnut can be used in several ways:
 - [Linux: managed by systemd](./docs/systemd)
 - [macOS: managed by launchd](./docs/launchd)
 - [Pi-hole: upstream DNS server](./docs/pihole)
+- [Docker Compose with Pi-hole: multi-container service](./docs/docker-compose-pihole)
 
 This example launches Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service. See the [command line interface](./docs/cli) reference for more options.
 
