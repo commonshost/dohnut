@@ -1,4 +1,5 @@
 ARG ARCH=amd64
+ARG NODE_VERSION=current
 
 FROM alpine:3.9.2 as qemu
 
@@ -16,7 +17,7 @@ RUN chmod +x /usr/bin/qemu-*
 
 # ----------------------------------------------------------------------------
 
-FROM ${ARCH}/node:12-alpine as build
+FROM ${ARCH}/node:${NODE_VERSION}-alpine as build
 
 # copy qemu binaries used for cross-compiling
 COPY --from=qemu /usr/bin/qemu-* /usr/bin/
@@ -38,7 +39,7 @@ RUN yarn install --ignore-optional --production
 
 # ----------------------------------------------------------------------------
 
-FROM ${ARCH}/node:12-alpine
+FROM ${ARCH}/node:${NODE_VERSION}-alpine
 
 ARG BUILD_DATE
 ARG BUILD_VERSION
@@ -53,6 +54,12 @@ LABEL org.label-schema.docker.cmd="docker run -p 53:53/tcp -p 53:53/udp commonsh
 LABEL org.label-schema.build-date="${BUILD_DATE}"
 LABEL org.label-schema.version="${BUILD_VERSION}"
 LABEL org.label-schema.vcs-ref="${VCS_REF}"
+
+RUN mkdir -p /etc/dohnut
+VOLUME /etc/dohnut
+WORKDIR /etc/dohnut
+
+ENV NODE_ENV production
 
 COPY --from=build /app /app
 

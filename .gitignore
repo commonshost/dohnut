@@ -2,3 +2,5 @@
 !.travis.yml
 !.gitignore
 qemu-*
+etc-*
+top-1m*

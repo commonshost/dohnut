@@ -4,3 +4,5 @@ test/
 docs/
 *.png
 qemu-*
+etc-*
+top-1m*
