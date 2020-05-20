@@ -5,7 +5,7 @@ FROM alpine:3.9.2 as qemu
 
 RUN apk add --no-cache curl
 
-ARG QEMU_VERSION=4.0.0
+ARG QEMU_VERSION=4.2.0-7
 
 # https://github.com/hadolint/hadolint/wiki/DL4006
 SHELL ["/bin/ash", "-o", "pipefail", "-c"]
@@ -55,9 +55,8 @@ LABEL org.label-schema.build-date="${BUILD_DATE}"
 LABEL org.label-schema.version="${BUILD_VERSION}"
 LABEL org.label-schema.vcs-ref="${VCS_REF}"
 
-RUN mkdir -p /etc/dohnut
-VOLUME /etc/dohnut
 WORKDIR /etc/dohnut
+VOLUME /etc/dohnut
 
 ENV NODE_ENV production
 
