@@ -4,19 +4,13 @@
 
 Use [Docker Compose](https://docs.docker.com/compose/) to run Dohnut and [Pi-hole](https://pi-hole.net) side-by-side on the same host. Dohnut encrypts Pi-hole's upstream DNS queries, adds DNS countermeasures, and supports load balancing across multiple DoH providers for better privacy and/or performance.
 
-This example runs Dohnut on port `53000/udp` and Pi-hole on port `53/udp`. It also exposes the Pi-hole web dashboard for monitoring and management at:
+This example runs Dohnut and Pi-hole, exposing the DNS resolver on port `53`. It also exposes the Pi-hole web dashboard for monitoring and management at:
 
 - http://pi.hole/admin/
 
-Important: Replace `XXX.XXX.XXX.XXX` with the IP address of the Docker host. For example: `192.168.1.2`
+Remember to set the `WEBPASSWORD` to your preferred password for the dashboard.
 
-To find the IP address, run:
-
-- Linux: `hostname --all-ip-addresses`
-- macOS: `ipconfig getifaddr en0 || ipconfig getifaddr en1`
-- Windows: `ipconfig`
-
-Save the edited YAML file and run both Dohnut and Pi-hole as background services:
+Save the YAML file and run both Dohnut and Pi-hole as automatically restarting background services:
 
     $ docker-compose up --detach
 
@@ -34,16 +28,17 @@ services:
     container_name: dohnut
     image: commonshost/dohnut:latest
     restart: unless-stopped
+    networks:
+      dohnut_pihole:
+        ipv4_address: 10.0.0.2
     environment:
-      DOHNUT_LISTEN: 0.0.0.0:53000
+      DOHNUT_LISTEN: 10.0.0.2:53000
       DOHNUT_BOOTSTRAP: 9.9.9.9 8.8.8.8 1.1.1.1
       DOHNUT_DOH: commonshost
       DOHNUT_COUNTERMEASURES: spoof-queries spoof-useragent
       DOHNUT_CACHE_DIRECTORY: /etc/dohnut
     volumes:
     - "./etc-dohnut/:/etc/dohnut/"
-    ports:
-    - "53000:53000/udp"
 
   # See: Docker Pi-hole
   # https://github.com/pi-hole/docker-pi-hole
@@ -53,9 +48,13 @@ services:
     container_name: pihole
     image: pihole/pihole:latest
     restart: unless-stopped
+    networks:
+      dohnut_pihole:
+        ipv4_address: 10.0.0.3
     environment:
-      DNS1: XXX.XXX.XXX.XXX#53000 # Set to host's IP address
       # WEBPASSWORD: "set a secure password here or it will be random"
+      DNS1: 10.0.0.2#53000
+      DNS2: "no"
     volumes:
     - "./etc-pihole/:/etc/pihole/"
     - "./etc-dnsmasq.d/:/etc/dnsmasq.d/"
@@ -65,6 +64,13 @@ services:
     - "67:67/udp"
     - "80:80/tcp"
     - "443:443/tcp"
+
+networks:
+  dohnut_pihole:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.0.0.0/24
 ```
 
 ## See Also
