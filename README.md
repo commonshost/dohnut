@@ -43,6 +43,14 @@ Dohnut can be used in several ways:
 
 This example launches Dohnut on your local machine to accept DNS connections and proxy them to the Commons Host DNS over HTTPS (DoH) service. See the [command line interface](./docs/cli) reference for more options.
 
+Run using Docker:
+
+```shell
+$ docker run --publish 53:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost --bootstrap 9.9.9.9
+```
+
+... or run using Node.js:
+
 ```shell
 $ sudo npx dohnut --listen 127.0.0.1:53 --doh https://commons.host
 

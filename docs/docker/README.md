@@ -15,10 +15,24 @@ Any options before the image name `commonshost/dohnut` are for Docker. Any optio
 Run forever as a background service, listen on port `53/udp` on all network interfaces, and DNS proxy queries to Commons Host DoH.
 
 ```shell
-$ docker run --detach --restart unless-stopped --net=host commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost --bootstrap 1.1.1.1
+$ docker run --detach --restart unless-stopped --publish 53:53/udp --name dohnut commonshost/dohnut --listen "[::]:53" --doh commonshost --bootstrap 9.9.9.9
 ```
 
-Or using docker-compose:
+Then check the logs, stop running the service, and remove the container.
+
+```
+$ docker logs --follow dohnut
+```
+
+To stop and remove the container:
+
+```
+$ docker stop dohnut
+$ docker rm dohnut
+```
+
+Or, using [Docker Compose](https://docs.docker.com/compose/):
+
 ```yaml
 version: "3"
 
@@ -34,6 +48,8 @@ services:
       DOHNUT_COUNTERMEASURES: spoof-queries
     network_mode: "host"
 ```
+
+See also: [Dohnut and Pi-hole using Docker Compose](../docker-compose-pihole)
 
 Test the service by performing a DNS query on the Docker host system.
 
@@ -85,30 +101,16 @@ Example error: Without the bootstrap option, Dohnut is unable to resolve the dom
 
     Worker 1: session error getaddrinfo EAI_AGAIN commons.host commons.host:443
 
-Solution: Set the `--bootstrap` option to the IP address of a public DNS service, for example `1.1.1.1` (Cloudflare) or `8.8.8.8` (Google).
+Solution: Set the `--bootstrap` option to the IP address of a public DNS service, for example `1.1.1.1` (Cloudflare) or `9.9.9.9` (Quad9).
 
-    $ dohnut [...] --bootstrap 1.1.1.1
+    $ dohnut [...] --bootstrap 9.9.9.9
 
 ## Networking
 
-Dohnut run inside a container so Docker needs to map its listening ports to the host's network.
-
-The simplest method is to expose the host network directly to the container.
+Dohnut runs isolated inside a container so Docker needs to map Dohnut's listening ports to the host's network.
 
 ```shell
-$ docker run --detach --restart unless-stopped --net=host commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost --bootstrap 1.1.1.1
-```
-
-Service using IPv4:
-
-```shell
-$ docker run --detach --restart unless-stopped --publish 0.0.0.0:53:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost --bootstrap 1.1.1.1
-```
-
-Service using IPv6:
-
-```shell
-$ docker run --detach --restart unless-stopped --publish [::]:53:53/udp commonshost/dohnut --listen [::]:53 --doh commonshost --bootstrap 1.1.1.1
+$ docker run --detach --restart unless-stopped --publish 53:53/udp --name=dohnut commonshost/dohnut --listen "[::]:53" --doh commonshost --bootstrap 9.9.9.9
 ```
 
 Please ensure that Dohnut is only exposed to a private LAN or localhost. Running a public, open DNS resolver exposed to public Internet traffic is strongly discouraged. Plaintext DNS/UDP is a potential source of [traffic amplification in DDoS attacks](https://en.wikipedia.org/wiki/Denial-of-service_attack#Amplification).
@@ -118,5 +120,7 @@ Expose Dohnut on `127.0.0.1` or `0.0.0.0` for localhost-only or all network inte
 DNS uses port `53` by default but one use case of re-mapping to another port is when Dohnut is used as a local proxy for another resolver like `resolved` or [Pi-hole](../pihole). For example to run Dohnut on port `53000` and only be accessible from the local host:
 
 ```shell
-$ docker run --detach --restart unless-stopped --publish 127.0.0.1:53000:53/udp commonshost/dohnut --listen 0.0.0.0:53 --doh commonshost --bootstrap 1.1.1.1
+$ docker run --detach --restart unless-stopped --publish 127.0.0.1:53000:53/udp --name=dohnut commonshost/dohnut --listen "[::]:53" --doh commonshost --bootstrap 9.9.9.9
+
+$ dig @localhost -p 53000 example.com
 ```
