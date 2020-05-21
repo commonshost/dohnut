@@ -55,6 +55,10 @@ services:
       # WEBPASSWORD: "set a secure password here or it will be random"
       DNS1: 10.0.0.2#53000
       DNS2: "no"
+    dns:
+    - 127.0.0.1
+    cap_add:
+    - NET_ADMIN
     volumes:
     - "./etc-pihole/:/etc/pihole/"
     - "./etc-dnsmasq.d/:/etc/dnsmasq.d/"
