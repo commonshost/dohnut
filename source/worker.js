@@ -90,9 +90,15 @@ function spoofQuery (domain) {
         name: domain
       }]
     })
-    const stream = sendQuery(query)
-    stream.on('error', (error) => {
+    let stream
+    try {
+      stream = sendQuery(query)
+    } catch (error) {
       console.error(`Worker ${threadId}: spoofed query failed - ${error.message}`)
+      return
+    }
+    stream.on('error', (error) => {
+      console.error(`Worker ${threadId}: spoofed query error - ${error.message}`)
       stream.close()
     })
     stream.resume()
@@ -211,7 +217,14 @@ parentPort.on('message', (value) => {
     spoofUseragent = value.spoofUseragent
     randomUseragent = useragent.random().toString()
     path = getPath(value.uri)
-    const options = {}
+    const options = {
+      maxSessionMemory: Number.MAX_SAFE_INTEGER,
+      peerMaxConcurrentStreams: 2 ** 32 - 1,
+      settings: {
+        enablePush: false,
+        maxConcurrentStreams: 2 ** 32 - 1
+      }
+    }
     if (value.bootstrap.length > 0) {
       options.lookup = lookupCustomDnsServers(value.bootstrap)
     }
@@ -219,6 +232,12 @@ parentPort.on('message', (value) => {
       options.session = value.tlsSession
     }
     session = connect(value.uri, options)
+    for (const side of ['local', 'remote']) {
+      const name = `${side}Settings`
+      session.on(name, (settings) => {
+        console.log(`Worker ${threadId}: HTTP/2`, name, settings)
+      })
+    }
     if (session.socket.getProtocol() === 'TLSv1.2') {
       const tlsSession = session.socket.getSession()
       parentPort.postMessage({ tlsSession })

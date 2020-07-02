@@ -2,12 +2,13 @@ const Pino = require('pino')
 const { createSocket } = require('dgram')
 const { join } = require('path')
 const EventEmitter = require('events')
+const { once } = require('events')
 const { Worker } = require('worker_threads')
 const { getPopularDomains } = require('./getPopularDomains')
 
 const PING_MIN_INTERVAL = 600000
 
-function startUdpSocket (type, address, port, fd) {
+function startUdpSocket ({ type, address, port, fd }) {
   return new Promise((resolve, reject) => {
     const socket = createSocket(type)
     function onSuccess () {
@@ -81,7 +82,6 @@ class Dohnut {
   getRandomConnection () {
     const index = Math.floor(Math.random() * this.doh.length)
     const connection = this.doh[index]
-    console.log('Selected', connection.uri)
     return connection
   }
 
@@ -176,12 +176,13 @@ class Dohnut {
       console.log(`Loaded ${count} popular domains`)
     }
 
-    for (const { type, address, port, fd } of this.configuration.dns) {
-      const socket = await startUdpSocket(type, address, port, fd)
-      const location = fd !== undefined ? `unix:${fd}`
-        : type === 'udp4' ? `${address}:${port}`
+    for (const resolver of this.configuration.dns) {
+      const socket = await startUdpSocket(resolver)
+      const { address, port } = socket.address()
+      const location = resolver.fd !== undefined ? `unix:${resolver.fd}`
+        : resolver.type === 'udp4' ? `${address}:${port}`
           : `[${address}]:${port}`
-      console.log(`Started listening on ${location} (${type})`)
+      console.log(`Started listening on ${location} (${resolver.type})`)
       socket.on('message', ({ buffer }, remote) => {
         const now = Date.now()
         const query = {
@@ -211,7 +212,7 @@ class Dohnut {
         }
       })
       socket.on('close', async () => {
-        console.log(`Stopped listening on ${location} (${type})`)
+        console.log(`Stopped listening on ${location} (${resolver.type})`)
       })
       this.dns.add(socket)
     }
@@ -314,13 +315,11 @@ class Connection extends EventEmitter {
     this.send({ ping: {} })
   }
 
-  stop () {
-    return new Promise((resolve) => {
-      if (this.worker) {
-        this.worker.on('exit', resolve)
-        this.worker.postMessage({ exit: true })
-      }
-    })
+  async stop () {
+    if (this.worker) {
+      this.worker.postMessage({ exit: true })
+      await once(this.worker, 'exit')
+    }
   }
 }
 
