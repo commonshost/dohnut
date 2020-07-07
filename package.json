@@ -16,7 +16,8 @@
     "start": "node source/bin.js",
     "test": "npm run lint && npm run proof",
     "lint": "standard --verbose | snazzy",
-    "proof": "tape 'test/*.js'"
+    "proof": "tape 'test/*.js'",
+    "lcov": "nyc --reporter=lcov --reporter=text-summary tape 'test/*.js'"
   },
   "keywords": [
     "doh",
@@ -25,6 +26,7 @@
   ],
   "devDependencies": {
     "blue-tape": "^1.0.0",
+    "nyc": "^15.1.0",
     "snazzy": "^8.0.0",
     "standard": "^14.0.0",
     "tape": "^5.0.0"
